@@ -578,6 +578,156 @@ function screenIcon(name) {
   return `<svg class="screen-icon" viewBox="0 0 24 24" aria-hidden="true">${paths[name] || paths.spark}</svg>`;
 }
 
+function renderTrendChart(items) {
+  const chartItems = items
+    .slice(0, 12)
+    .filter((item) => Number.isFinite(new Date(item.publishedAt || 0).getTime()))
+    .reverse();
+  const scores = chartItems.map(scoreFor);
+  const width = 560;
+  const height = 168;
+  const left = 24;
+  const right = 18;
+  const top = 16;
+  const bottom = 24;
+
+  if (!scores.length) {
+    return `<div class="screen-chart-empty">暂无趋势数据</div>`;
+  }
+
+  const min = Math.max(0, Math.min(...scores) - 4);
+  const max = Math.min(100, Math.max(...scores) + 4);
+  const range = Math.max(1, max - min);
+  const plotWidth = width - left - right;
+  const plotHeight = height - top - bottom;
+  const points = scores.map((score, index) => {
+    const x = left + (chartItems.length === 1 ? plotWidth : (index / (chartItems.length - 1)) * plotWidth);
+    const y = top + (1 - (score - min) / range) * plotHeight;
+    return { x, y, score, item: chartItems[index] };
+  });
+  const line = points.map((point) => `${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(" ");
+  const area = [
+    `${points[0].x.toFixed(1)},${height - bottom}`,
+    ...points.map((point) => `${point.x.toFixed(1)},${point.y.toFixed(1)}`),
+    `${points[points.length - 1].x.toFixed(1)},${height - bottom}`,
+  ].join(" ");
+  const grid = [0, 0.5, 1]
+    .map((ratio) => {
+      const y = top + ratio * plotHeight;
+      return `<line x1="${left}" y1="${y.toFixed(1)}" x2="${width - right}" y2="${y.toFixed(1)}"></line>`;
+    })
+    .join("");
+  const dots = points
+    .map((point) => `<circle cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="3.2"></circle>`)
+    .join("");
+  const firstLabel = escapeHtml(formatTime(chartItems[0]?.publishedAt));
+  const lastLabel = escapeHtml(formatTime(chartItems[chartItems.length - 1]?.publishedAt));
+
+  return `
+    <svg class="screen-trend-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="热度趋势折线图">
+      <defs>
+        <linearGradient id="screenTrendFill" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#2563eb" stop-opacity="0.24"></stop>
+          <stop offset="100%" stop-color="#0ea5e9" stop-opacity="0.02"></stop>
+        </linearGradient>
+      </defs>
+      <g class="screen-chart-grid">${grid}</g>
+      <polygon class="screen-trend-area" points="${area}"></polygon>
+      <polyline class="screen-trend-line" points="${line}"></polyline>
+      <g class="screen-trend-dots">${dots}</g>
+      <text x="${left}" y="${height - 4}">${firstLabel}</text>
+      <text x="${width - right}" y="${height - 4}" text-anchor="end">${lastLabel}</text>
+      <text x="${width - right}" y="14" text-anchor="end">MAX ${Math.max(...scores)}</text>
+    </svg>
+  `;
+}
+
+function renderDistributionDonut(categoryKeys, counts) {
+  const palette = ["#2563eb", "#0ea5e9", "#14b8a6", "#f59e0b", "#8b5cf6"];
+  const total = categoryKeys.reduce((sum, key) => sum + (counts[key] || 0), 0);
+  let start = 0;
+  const stops = categoryKeys.map((key, index) => {
+    const value = counts[key] || 0;
+    const size = total ? (value / total) * 360 : 0;
+    const end = start + size;
+    const part = `${palette[index]} ${start.toFixed(1)}deg ${end.toFixed(1)}deg`;
+    start = end;
+    return part;
+  });
+  const background = total ? `conic-gradient(${stops.join(", ")})` : "var(--panel-soft)";
+  const legend = categoryKeys
+    .map((key, index) => {
+      const value = counts[key] || 0;
+      const percent = total ? Math.round((value / total) * 100) : 0;
+      return `
+        <li>
+          <i style="background:${palette[index]}"></i>
+          <span>${escapeHtml(categories[key])}</span>
+          <b>${value}</b>
+          <small>${percent}%</small>
+        </li>
+      `;
+    })
+    .join("");
+
+  return `
+    <div class="screen-donut-wrap">
+      <div class="screen-donut" style="background:${background}">
+        <div>
+          <strong>${total}</strong>
+          <span>条目</span>
+        </div>
+      </div>
+      <ul class="screen-chart-legend">${legend}</ul>
+    </div>
+  `;
+}
+
+function renderSourceBars(items) {
+  const sourceCounts = items.reduce((acc, item) => {
+    const key = item.source || "未知信源";
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+  const rows = Object.entries(sourceCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
+  const max = Math.max(1, ...rows.map((row) => row[1]));
+
+  return rows
+    .map(([source, count]) => {
+      const width = Math.max(8, (count / max) * 100);
+      return `
+        <li class="screen-chart-bar">
+          <div>
+            <span>${escapeHtml(source)}</span>
+            <b>${count}</b>
+          </div>
+          <i><em style="width:${width}%"></em></i>
+        </li>
+      `;
+    })
+    .join("");
+}
+
+function renderScoreBars(items) {
+  return sortByScore(items)
+    .slice(0, 5)
+    .map((item, index) => {
+      const score = scoreFor(item);
+      return `
+        <li class="screen-chart-bar hot">
+          <div>
+            <span>${String(index + 1).padStart(2, "0")} ${escapeHtml(item.title)}</span>
+            <b>${score}</b>
+          </div>
+          <i><em style="width:${score}%"></em></i>
+        </li>
+      `;
+    })
+    .join("");
+}
+
 function renderScreen(items) {
   if (!items.length) {
     els.screenBoard.innerHTML = `<div class="empty">暂无可展示的方案洞察。</div>`;
@@ -588,19 +738,11 @@ function renderScreen(items) {
   const lead = ranked[0];
   const latest = items.slice(0, 12);
   const categoryKeys = ["ai-models", "ai-products", "industry", "paper", "tip"];
-  const categoryIcons = {
-    "ai-models": "model",
-    "ai-products": "product",
-    industry: "industry",
-    paper: "paper",
-    tip: "tip",
-  };
   const counts = items.reduce((acc, item) => {
     const key = item.category || "uncategorized";
     acc[key] = (acc[key] || 0) + 1;
     return acc;
   }, {});
-  const maxCount = Math.max(1, ...categoryKeys.map((key) => counts[key] || 0));
   const sources = new Set(items.map((item) => item.source).filter(Boolean));
   const recentCount = items.filter((item) => {
     const time = new Date(item.publishedAt || 0).getTime();
@@ -641,38 +783,6 @@ function renderScreen(items) {
     )
     .join("");
 
-  const categoryHtml = categoryKeys
-    .map((key) => {
-      const categoryItems = items.filter((item) => item.category === key).slice(0, 3);
-      const list = categoryItems
-        .map((item) => `<li>${escapeHtml(item.title)}</li>`)
-        .join("");
-      const width = Math.max(6, ((counts[key] || 0) / maxCount) * 100);
-      return `
-        <article class="screen-category">
-          <header>
-            <span>${screenIcon(categoryIcons[key])}${escapeHtml(categories[key])}</span>
-            <strong>${counts[key] || 0}</strong>
-          </header>
-          <div class="screen-bar"><span style="width:${width}%"></span></div>
-          <ol>${list || "<li>暂无条目</li>"}</ol>
-        </article>
-      `;
-    })
-    .join("");
-
-  const signalHtml = ranked
-    .slice(1, 7)
-    .map(
-      (item) => `
-        <article>
-          <b>${screenIcon("bolt")}${scoreFor(item)}</b>
-          <span>${escapeHtml(item.title)}</span>
-        </article>
-      `,
-    )
-    .join("");
-
   els.screenBoard.innerHTML = `
     <div class="screen-shell">
       <section class="screen-metrics" aria-label="大屏态势总览">
@@ -703,16 +813,38 @@ function renderScreen(items) {
         <ol>${latestHtml}</ol>
       </section>
 
-      <section class="screen-signals">
-        <header>
-          <span>${screenIcon("bolt")} 高分信号</span>
-          <strong>TOP 6</strong>
-        </header>
-        <div>${signalHtml}</div>
-      </section>
+      <section class="screen-charts" aria-label="大屏图表分析">
+        <article class="screen-chart screen-chart-trend">
+          <header>
+            <span>${screenIcon("pulse")} 热度趋势</span>
+            <strong>最近 12 条</strong>
+          </header>
+          ${renderTrendChart(items)}
+        </article>
 
-      <section class="screen-categories">
-        ${categoryHtml}
+        <article class="screen-chart">
+          <header>
+            <span>${screenIcon("grid")} 类别分布</span>
+            <strong>${categoryKeys.length} 类</strong>
+          </header>
+          ${renderDistributionDonut(categoryKeys, counts)}
+        </article>
+
+        <article class="screen-chart">
+          <header>
+            <span>${screenIcon("source")} 信源排行</span>
+            <strong>TOP 5</strong>
+          </header>
+          <ul class="screen-chart-bars">${renderSourceBars(items)}</ul>
+        </article>
+
+        <article class="screen-chart">
+          <header>
+            <span>${screenIcon("bolt")} 热度排行</span>
+            <strong>TOP 5</strong>
+          </header>
+          <ul class="screen-chart-bars">${renderScoreBars(items)}</ul>
+        </article>
       </section>
     </div>
   `;
