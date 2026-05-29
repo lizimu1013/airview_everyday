@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI HOT 时间轴</title>
+    <link rel="stylesheet" href="/styles.css?v=20260529-all" />
+  </head>
+  <body>
+    <main class="page" aria-live="polite">
+      <header class="site-header">
+        <a class="brand" href="/" aria-label="AI HOT 首页">
+          <span class="brand-mark">AI</span>
+          <span>AI HOT</span>
+        </a>
+        <nav class="nav-links" aria-label="主导航">
+          <a class="active" href="/" data-view-link="timeline" data-feed-link="selected">精选</a>
+          <a href="/all" data-feed-link="all">全部</a>
+          <a href="/?view=screen" data-view-link="screen">大屏</a>
+          <a href="https://aihot.virxact.com/daily" target="_blank" rel="noreferrer">日报</a>
+          <a href="https://aihot.virxact.com/agent" target="_blank" rel="noreferrer">Agent 接入</a>
+        </nav>
+        <div class="header-right">
+          <div class="clock">
+            <span id="clockTime">--:--</span>
+            <small id="clockDate">--</small>
+          </div>
+          <div class="pulse" id="connectionState"><span></span>实时同步</div>
+        </div>
+      </header>
+
+      <section class="hero">
+        <p class="eyebrow" id="pageEyebrow">精选</p>
+        <h1 id="pageTitle">AI 热点时间轴</h1>
+        <p class="hero-copy" id="pageCopy">按发布时间滚动展示当前最值得关注的 AI 动态。</p>
+      </section>
+
+      <section class="toolbar" aria-label="筛选">
+        <div class="source-tabs" id="sourceTabs" hidden>
+          <button class="active" data-source="all">全部</button>
+          <button data-source="firsthand">一手信源</button>
+          <button data-source="media">资讯</button>
+          <button data-source="social">推文</button>
+        </div>
+        <div class="segmented" id="categoryTabs">
+          <button class="active" data-category="all">全部</button>
+          <button data-category="ai-models">模型</button>
+          <button data-category="ai-products">产品</button>
+          <button data-category="industry">行业</button>
+          <button data-category="paper">论文</button>
+          <button data-category="tip">技巧</button>
+        </div>
+        <label class="search">
+          <span>搜索</span>
+          <input id="searchInput" type="search" placeholder="OpenAI / Sora / RAG" autocomplete="off" />
+        </label>
+        <button class="refresh-button" id="refreshButton" title="刷新数据" aria-label="刷新数据">↻</button>
+      </section>
+
+      <section class="summary-strip" aria-label="新闻概览">
+        <div>
+          <span>条目</span>
+          <strong id="totalCount">--</strong>
+        </div>
+        <div>
+          <span>信源</span>
+          <strong id="sourceCount">--</strong>
+        </div>
+        <div>
+          <span>最高分</span>
+          <strong id="topScore">--</strong>
+        </div>
+        <div>
+          <span>更新</span>
+          <strong id="lastUpdated">--</strong>
+        </div>
+      </section>
+
+      <section class="timeline" id="timelineList" aria-label="AI 热点时间轴">
+        <div class="empty">正在加载最新 AI 热点。</div>
+      </section>
+
+      <section class="screen-board" id="screenBoard" aria-label="AI 热点大屏" hidden>
+        <div class="empty">正在加载最新 AI 热点。</div>
+      </section>
+    </main>
+
+    <script src="/app.js?v=20260529-all" type="module"></script>
+  </body>
+</html>
