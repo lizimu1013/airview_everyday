@@ -444,7 +444,7 @@ async function proxyHot(req, res) {
     try {
       body = JSON.parse(text);
     } catch {
-      body = { error: "AI HOT returned non-JSON data.", detail: text.slice(0, 300) };
+      body = { error: "Upstream data source returned non-JSON data.", detail: text.slice(0, 300) };
     }
 
     if (!response.ok) {
@@ -460,7 +460,7 @@ async function proxyHot(req, res) {
     sendJson(res, 200, body, { "x-airview-cache": "MISS" });
   } catch (error) {
     sendJson(res, 502, {
-      error: "Unable to reach AI HOT right now.",
+      error: "Unable to reach the upstream data source right now.",
       detail: error instanceof Error ? error.message : String(error),
     });
   }
@@ -765,7 +765,7 @@ async function callPaperRadarModel(sourceData) {
   }
 
   const systemPrompt = [
-    "你是用户的论文雷达助手。每天扫描 arXiv、Papers with Code、Google Scholar Alert 的可访问结果，筛选与用户相关的论文，生成精读候选清单。",
+    "你是用户的论文精读助手。每天扫描 arXiv、Papers with Code、Google Scholar Alert 的可访问结果，筛选与用户相关的论文，生成精读候选清单。",
     `关注方向：${radarTopics.join("；")}。`,
     "输出不超过 10 篇。不要因为标题像就推荐，优先看摘要和方法；如果只是理论推导但难以工程转化，要说明。",
     "不要编造论文内容；只使用给定候选中的可访问来源。作者机构或方法细节不确定时，明确写未知或需原文确认。",
@@ -890,7 +890,7 @@ async function proxyPaperRadar(req, res) {
     sendJson(res, 200, body);
   } catch (error) {
     sendJson(res, 502, {
-      error: "Paper radar is unavailable right now.",
+      error: "Solution AI Mate paper assistant is unavailable right now.",
       detail: error instanceof Error ? error.message : String(error),
     });
   }
@@ -942,5 +942,5 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(port, host, () => {
-  console.log(`AI Hot dashboard listening on http://${host}:${port}`);
+  console.log(`Solution AI Mate listening on http://${host}:${port}`);
 });

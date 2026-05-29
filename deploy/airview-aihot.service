@@ -1,5 +1,5 @@
 [Unit]
-Description=AI HOT dashboard for aihot.muchu.cloud
+Description=Solution AI Mate site for aihot.muchu.cloud
 After=network-online.target
 Wants=network-online.target
 

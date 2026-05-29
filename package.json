@@ -1,5 +1,6 @@
 {
-  "name": "airview-everyday",
+  "name": "solution-ai-mate",
+  "description": "Solution AI Mate web dashboard",
   "version": "0.1.0",
   "private": true,
   "type": "module",

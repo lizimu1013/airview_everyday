@@ -245,14 +245,16 @@ function applyView() {
   els.sourceTabs.hidden = isScreen || isRadar || state.feed !== "all";
 
   if (isRadar) {
-    els.pageEyebrow.textContent = "通信论文";
-    els.pageTitle.textContent = "论文雷达";
-    els.pageCopy.textContent = "聚焦 AI Agent、AI Coding、RAG 与无线通信网络方向的每日精读候选。";
+    els.pageEyebrow.textContent = "论文精读";
+    els.pageTitle.textContent = "解决方案AI助手 · 论文精读";
+    els.pageCopy.textContent = "聚焦 AI Agent、AI Coding、RAG 与无线通信网络方向，筛选可转化为方案工作的每日精读候选。";
   } else {
-    els.pageEyebrow.textContent = state.feed === "all" ? "全部动态" : "精选";
-    els.pageTitle.textContent = state.feed === "all" ? "AI 全量动态" : "AI 热点时间轴";
+    els.pageEyebrow.textContent = state.feed === "all" ? "信息库" : "方案精选";
+    els.pageTitle.textContent = state.feed === "all" ? "解决方案AI助手 · 信息库" : "解决方案AI助手 · Solution AI Mate";
     els.pageCopy.textContent =
-      state.feed === "all" ? "AI 相关资讯全量信息流，按发布时间持续更新。" : "按发布时间滚动展示当前最值得关注的 AI 动态。";
+      state.feed === "all"
+        ? "汇总可用于方案洞察、技术分析和内容生成的信息线索，按发布时间持续更新。"
+        : "面向解决方案工作的 AI 助手，辅助方案洞察、信息整理、内容生成、技术分析和工作提效。";
   }
 
   els.navLinks.forEach((link) => link.classList.remove("active"));
@@ -305,15 +307,15 @@ async function fetchRadar(refresh = false) {
   if (state.radarLoading) return;
   state.radarLoading = true;
   setConnection(true, "扫描中");
-  els.radarBoard.innerHTML = `<div class="empty">正在扫描可访问论文源并生成精读候选。</div>`;
+  els.radarBoard.innerHTML = `<div class="empty">正在扫描可访问论文源并生成方案精读候选。</div>`;
 
   try {
     const response = await fetch(`/api/paper-radar${refresh ? "?refresh=1" : ""}`);
     const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "论文雷达生成失败");
+    if (!response.ok) throw new Error(data.error || "论文精读候选生成失败");
     state.radar = data;
     renderRadar(data);
-    setConnection(true, data.cached ? "雷达缓存" : "实时同步");
+    setConnection(true, data.cached ? "候选缓存" : "实时同步");
   } catch (error) {
     setConnection(false, "扫描失败");
     renderRadarError(error);
@@ -442,14 +444,14 @@ function renderRadar(report) {
 function renderRadarError(error) {
   els.radarBoard.innerHTML = `
     <div class="empty">
-      论文雷达暂不可用：${escapeHtml(error instanceof Error ? error.message : String(error))}
+      论文精读助手暂不可用：${escapeHtml(error instanceof Error ? error.message : String(error))}
     </div>
   `;
 }
 
 function renderTimeline(items) {
   if (!items.length) {
-    els.timelineList.innerHTML = `<div class="empty">没有匹配到当前筛选条件下的 AI 热点。</div>`;
+    els.timelineList.innerHTML = `<div class="empty">没有匹配到当前筛选条件下的方案洞察。</div>`;
     return;
   }
 
@@ -528,7 +530,7 @@ function renderTimeline(items) {
 
 function renderScreen(items) {
   if (!items.length) {
-    els.screenBoard.innerHTML = `<div class="empty">暂无可展示的 AI 热点。</div>`;
+    els.screenBoard.innerHTML = `<div class="empty">暂无可展示的方案洞察。</div>`;
     return;
   }
 

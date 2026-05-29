@@ -6,4 +6,4 @@ rm -f /etc/nginx/sites-enabled/aihot.muchu.cloud
 nginx -t
 systemctl reload nginx
 
-echo "Rolled back aihot.muchu.cloud route and stopped airview-aihot.service."
+echo "Rolled back Solution AI Mate route and stopped airview-aihot.service."
