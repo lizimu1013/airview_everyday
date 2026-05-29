@@ -559,6 +559,25 @@ function renderTimeline(items) {
   });
 }
 
+function screenIcon(name) {
+  const paths = {
+    spark: '<path d="M12 2v4"></path><path d="M12 18v4"></path><path d="m4.93 4.93 2.83 2.83"></path><path d="m16.24 16.24 2.83 2.83"></path><path d="M2 12h4"></path><path d="M18 12h4"></path><path d="m4.93 19.07 2.83-2.83"></path><path d="m16.24 7.76 2.83-2.83"></path>',
+    source: '<path d="M4 6h16"></path><path d="M4 12h10"></path><path d="M4 18h7"></path><path d="m15 17 2 2 4-5"></path>',
+    score: '<path d="m12 3 2.7 5.47 6.04.88-4.37 4.26 1.03 6.01L12 16.78l-5.4 2.84 1.03-6.01-4.37-4.26 6.04-.88L12 3z"></path>',
+    pulse: '<path d="M3 12h4l2-6 4 12 2-6h6"></path>',
+    clock: '<circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path>',
+    layers: '<path d="m12 3 9 5-9 5-9-5 9-5z"></path><path d="m3 13 9 5 9-5"></path>',
+    bolt: '<path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"></path>',
+    grid: '<rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect>',
+    model: '<path d="M12 3 4 7v10l8 4 8-4V7l-8-4z"></path><path d="M12 12 4 7"></path><path d="M12 12v9"></path><path d="m12 12 8-5"></path>',
+    product: '<path d="M6 3h12l2 5H4l2-5z"></path><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"></path>',
+    industry: '<path d="M3 21h18"></path><path d="M5 21V8l6-3v16"></path><path d="M13 21V7l6 3v11"></path><path d="M8 12h1"></path><path d="M8 16h1"></path><path d="M16 14h1"></path>',
+    paper: '<path d="M7 3h7l5 5v13H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path><path d="M14 3v5h5"></path><path d="M8 13h8"></path><path d="M8 17h6"></path>',
+    tip: '<path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M12 2a7 7 0 0 0-4 12c.7.58 1 1.22 1 2h6c0-.78.3-1.42 1-2a7 7 0 0 0-4-12z"></path>',
+  };
+  return `<svg class="screen-icon" viewBox="0 0 24 24" aria-hidden="true">${paths[name] || paths.spark}</svg>`;
+}
+
 function renderScreen(items) {
   if (!items.length) {
     els.screenBoard.innerHTML = `<div class="empty">暂无可展示的方案洞察。</div>`;
@@ -569,18 +588,49 @@ function renderScreen(items) {
   const lead = ranked[0];
   const latest = items.slice(0, 12);
   const categoryKeys = ["ai-models", "ai-products", "industry", "paper", "tip"];
+  const categoryIcons = {
+    "ai-models": "model",
+    "ai-products": "product",
+    industry: "industry",
+    paper: "paper",
+    tip: "tip",
+  };
   const counts = items.reduce((acc, item) => {
     const key = item.category || "uncategorized";
     acc[key] = (acc[key] || 0) + 1;
     return acc;
   }, {});
   const maxCount = Math.max(1, ...categoryKeys.map((key) => counts[key] || 0));
+  const sources = new Set(items.map((item) => item.source).filter(Boolean));
+  const recentCount = items.filter((item) => {
+    const time = new Date(item.publishedAt || 0).getTime();
+    return Number.isFinite(time) && Date.now() - time <= 3 * 60 * 60 * 1000;
+  }).length;
+  const metricHtml = [
+    ["spark", "总线索", `${items.length}`, "实时聚合"],
+    ["source", "信源覆盖", `${sources.size}`, "跨平台扫描"],
+    ["score", "最高热度", `${scoreFor(lead)}`, "优先级"],
+    ["pulse", "3H 新增", `${recentCount}`, "新鲜信号"],
+  ]
+    .map(
+      ([icon, label, value, hint]) => `
+        <article class="screen-metric">
+          <span class="screen-icon-box">${screenIcon(icon)}</span>
+          <div>
+            <span>${label}</span>
+            <strong>${value}</strong>
+            <small>${hint}</small>
+          </div>
+        </article>
+      `,
+    )
+    .join("");
 
   const latestHtml = latest
     .map(
       (item, index) => `
         <li>
-          <span class="rank">${String(index + 1).padStart(2, "0")}</span>
+          <span class="rank">${screenIcon("clock")}${String(index + 1).padStart(2, "0")}</span>
           <div>
             <strong>${escapeHtml(item.title)}</strong>
             <small>${escapeHtml(formatTime(item.publishedAt))} · ${escapeHtml(categories[item.category] || "其他")} · ${escapeHtml(item.source || "未知信源")}</small>
@@ -601,7 +651,7 @@ function renderScreen(items) {
       return `
         <article class="screen-category">
           <header>
-            <span>${escapeHtml(categories[key])}</span>
+            <span>${screenIcon(categoryIcons[key])}${escapeHtml(categories[key])}</span>
             <strong>${counts[key] || 0}</strong>
           </header>
           <div class="screen-bar"><span style="width:${width}%"></span></div>
@@ -616,7 +666,7 @@ function renderScreen(items) {
     .map(
       (item) => `
         <article>
-          <b>${scoreFor(item)}</b>
+          <b>${screenIcon("bolt")}${scoreFor(item)}</b>
           <span>${escapeHtml(item.title)}</span>
         </article>
       `,
@@ -625,9 +675,13 @@ function renderScreen(items) {
 
   els.screenBoard.innerHTML = `
     <div class="screen-shell">
+      <section class="screen-metrics" aria-label="大屏态势总览">
+        ${metricHtml}
+      </section>
+
       <section class="screen-hero">
         <div class="screen-kicker">
-          <span>TOP STORY</span>
+          <span>${screenIcon("spark")} TOP STORY</span>
           <strong>精选 ${scoreFor(lead)}</strong>
         </div>
         <h2>${escapeHtml(lead.title)}</h2>
@@ -643,7 +697,7 @@ function renderScreen(items) {
 
       <section class="screen-list">
         <header>
-          <span>最新动态</span>
+          <span>${screenIcon("clock")} 最新动态</span>
           <strong>${items.length} 条</strong>
         </header>
         <ol>${latestHtml}</ol>
@@ -651,7 +705,7 @@ function renderScreen(items) {
 
       <section class="screen-signals">
         <header>
-          <span>高分信号</span>
+          <span>${screenIcon("bolt")} 高分信号</span>
           <strong>TOP 6</strong>
         </header>
         <div>${signalHtml}</div>

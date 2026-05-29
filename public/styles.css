@@ -934,8 +934,9 @@ body.is-screen {
 .screen-shell {
   display: grid;
   grid-template-columns: minmax(0, 1.06fr) minmax(520px, 0.94fr);
-  grid-template-rows: minmax(0, 1fr) minmax(250px, 0.58fr);
+  grid-template-rows: 96px minmax(0, 1fr) minmax(250px, 0.54fr);
   grid-template-areas:
+    "metrics metrics"
     "hero list"
     "signals categories";
   gap: 14px;
@@ -943,14 +944,88 @@ body.is-screen {
   min-height: 720px;
 }
 
+.screen-metrics,
 .screen-hero,
 .screen-list,
 .screen-signals,
 .screen-category {
-  border: 1px solid rgba(114, 137, 113, 0.18);
+  border: 1px solid rgba(80, 126, 184, 0.18);
   border-radius: 12px;
   background: color-mix(in srgb, var(--panel) 88%, transparent);
   box-shadow: 0 22px 64px rgba(26, 47, 82, 0.1);
+}
+
+.screen-icon {
+  width: 1em;
+  height: 1em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.screen-icon-box {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  place-items: center;
+  color: var(--green);
+  border: 1px solid rgba(37, 99, 235, 0.16);
+  border-radius: 12px;
+  background: var(--green-soft);
+  font-size: 21px;
+}
+
+.screen-metrics {
+  grid-area: metrics;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  padding: 12px;
+}
+
+.screen-metric {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 10px 12px;
+  overflow: hidden;
+  border: 1px solid rgba(80, 126, 184, 0.14);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--panel-soft) 76%, transparent);
+}
+
+.screen-metric div {
+  min-width: 0;
+}
+
+.screen-metric span,
+.screen-metric small {
+  display: block;
+  overflow: hidden;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.screen-metric span {
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.screen-metric strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.screen-metric small {
+  margin-top: 5px;
+  font-size: 11px;
 }
 
 .screen-hero {
@@ -976,9 +1051,19 @@ body.is-screen {
 .screen-list header span,
 .screen-signals header span,
 .screen-category header span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   color: var(--green);
   font-size: 13px;
   font-weight: 900;
+}
+
+.screen-kicker .screen-icon,
+.screen-list header .screen-icon,
+.screen-signals header .screen-icon,
+.screen-category header .screen-icon {
+  font-size: 18px;
 }
 
 .screen-kicker strong,
@@ -1003,11 +1088,11 @@ body.is-screen {
   display: -webkit-box;
   margin: 0;
   overflow: hidden;
-  color: #455047;
+  color: var(--muted);
   font-size: 20px;
   line-height: 1.72;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 7;
+  -webkit-line-clamp: 6;
 }
 
 .screen-tags {
@@ -1022,8 +1107,8 @@ body.is-screen {
   max-width: 100%;
   padding: 6px 10px;
   overflow: hidden;
-  color: #395143;
-  border: 1px solid rgba(89, 134, 108, 0.2);
+  color: var(--green);
+  border: 1px solid rgba(37, 99, 235, 0.18);
   border-radius: 999px;
   background: var(--green-soft);
   font-size: 13px;
@@ -1049,19 +1134,27 @@ body.is-screen {
 
 .screen-list li {
   display: grid;
-  grid-template-columns: 38px minmax(0, 1fr) 42px;
+  grid-template-columns: 46px minmax(0, 1fr) 42px;
   gap: 10px;
   align-items: center;
   min-height: 46px;
   padding: 8px 10px;
-  border: 1px solid rgba(114, 137, 113, 0.12);
+  border: 1px solid rgba(80, 126, 184, 0.12);
   border-radius: 10px;
-  background: #f7faf5;
+  background: color-mix(in srgb, var(--panel-soft) 74%, transparent);
 }
 
 .rank {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   color: var(--green);
+  font-size: 12px;
   font-weight: 900;
+}
+
+.rank .screen-icon {
+  font-size: 15px;
 }
 
 .screen-list li strong {
@@ -1105,23 +1198,31 @@ body.is-screen {
 
 .screen-signals article {
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr);
+  grid-template-columns: 58px minmax(0, 1fr);
   gap: 10px;
   min-height: 58px;
   padding: 10px;
   border-radius: 10px;
-  background: #f7faf5;
+  background: color-mix(in srgb, var(--panel-soft) 74%, transparent);
 }
 
 .screen-signals b {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   color: var(--yellow);
-  font-size: 20px;
+  font-size: 19px;
+}
+
+.screen-signals b .screen-icon {
+  color: var(--green);
+  font-size: 16px;
 }
 
 .screen-signals span {
   display: -webkit-box;
   overflow: hidden;
-  color: #2c362e;
+  color: var(--text);
   font-size: 15px;
   line-height: 1.35;
   -webkit-box-orient: vertical;
@@ -1148,14 +1249,14 @@ body.is-screen {
   margin: 10px 0 12px;
   overflow: hidden;
   border-radius: 999px;
-  background: #e4eadf;
+  background: var(--panel-soft);
 }
 
 .screen-bar span {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, #5de0a8, #52d2ff);
+  background: linear-gradient(90deg, #2563eb, #0ea5e9);
 }
 
 .screen-category ol {
