@@ -25,92 +25,160 @@
       name="twitter:description"
       content="面向解决方案工作的 AI 助手，辅助方案洞察、信息整理、内容生成、技术分析和工作提效。"
     />
-    <link rel="stylesheet" href="/styles.css?v=20260529-solution-ai-mate" />
+    <link rel="stylesheet" href="/styles.css?v=20260529-sidebar-workspace" />
   </head>
   <body>
+    <aside class="sidebar" aria-label="功能导航">
+      <a class="sidebar-brand" href="/" aria-label="解决方案AI助手首页">
+        <span class="brand-mark">AI</span>
+        <span>
+          <strong>解决方案AI助手</strong>
+          <small>Solution AI Mate</small>
+        </span>
+      </a>
+
+      <nav class="nav-links" aria-label="主导航">
+        <div class="nav-section">
+          <span class="nav-section-title">工作台</span>
+          <a class="active" href="/" data-view-link="timeline" data-feed-link="selected">
+            <span class="nav-icon" aria-hidden="true">⌁</span>
+            <span>精选</span>
+          </a>
+          <a href="/all" data-feed-link="all">
+            <span class="nav-icon" aria-hidden="true">▦</span>
+            <span>全部 AI 动态</span>
+          </a>
+          <a href="/communication" data-view-link="radar">
+            <span class="nav-icon" aria-hidden="true">◎</span>
+            <span>论文精读</span>
+          </a>
+          <a href="/?view=screen" data-view-link="screen">
+            <span class="nav-icon" aria-hidden="true">▣</span>
+            <span>大屏展示</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <span class="nav-section-title">资源</span>
+          <a href="https://aihot.virxact.com/daily" target="_blank" rel="noreferrer">
+            <span class="nav-icon" aria-hidden="true">◷</span>
+            <span>AI 日报</span>
+          </a>
+          <a href="https://aihot.virxact.com/agent" target="_blank" rel="noreferrer">
+            <span class="nav-icon" aria-hidden="true">↗</span>
+            <span>Agent 接入</span>
+          </a>
+          <a href="https://github.com/lizimu1013/airview_everyday#readme" target="_blank" rel="noreferrer">
+            <span class="nav-icon" aria-hidden="true">i</span>
+            <span>关于</span>
+          </a>
+          <a href="https://github.com/lizimu1013/airview_everyday/commits/main" target="_blank" rel="noreferrer">
+            <span class="nav-icon" aria-hidden="true">↻</span>
+            <span>更新日志</span>
+          </a>
+          <a href="https://github.com/lizimu1013/airview_everyday/issues" target="_blank" rel="noreferrer">
+            <span class="nav-icon" aria-hidden="true">?</span>
+            <span>反馈</span>
+          </a>
+          <a href="https://github.com/lizimu1013/airview_everyday/issues/new" target="_blank" rel="noreferrer">
+            <span class="nav-icon" aria-hidden="true">＋</span>
+            <span>信源提报</span>
+          </a>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="theme-toggle" id="themeToggle" type="button" aria-label="切换亮色或暗色主题">
+          <span class="nav-icon" aria-hidden="true">☼</span>
+          <span>亮色 / 暗色</span>
+        </button>
+        <div class="user-slot" aria-label="用户信息">
+          <span class="user-avatar">访</span>
+          <span>
+            <strong>访客模式</strong>
+            <small>工作台预览</small>
+          </span>
+        </div>
+      </div>
+    </aside>
+
     <main class="page" aria-live="polite">
-      <header class="site-header">
-        <a class="brand" href="/" aria-label="解决方案AI助手首页">
-          <span class="brand-mark">AI</span>
-          <span>解决方案AI助手</span>
-        </a>
-        <nav class="nav-links" aria-label="主导航">
-          <a class="active" href="/" data-view-link="timeline" data-feed-link="selected">方案精选</a>
-          <a href="/all" data-feed-link="all">信息库</a>
-          <a href="/communication" data-view-link="radar">论文精读</a>
-          <a href="/?view=screen" data-view-link="screen">大屏</a>
-          <a href="https://aihot.virxact.com/daily" target="_blank" rel="noreferrer">每日简报</a>
-          <a href="https://aihot.virxact.com/agent" target="_blank" rel="noreferrer">助手接入</a>
-        </nav>
-        <div class="header-right">
-          <div class="clock">
-            <span id="clockTime">--:--</span>
-            <small id="clockDate">--</small>
+      <div class="content-shell">
+        <header class="site-header">
+          <div class="topbar-title">
+            <span>当前视图</span>
+            <strong id="topbarTitle">方案精选</strong>
           </div>
-          <div class="pulse" id="connectionState"><span></span>实时同步</div>
-        </div>
-      </header>
+          <div class="header-right">
+            <div class="clock">
+              <span id="clockTime">--:--</span>
+              <small id="clockDate">--</small>
+            </div>
+            <div class="pulse" id="connectionState"><span></span>实时同步</div>
+          </div>
+        </header>
 
-      <section class="hero">
-        <p class="eyebrow" id="pageEyebrow">方案精选</p>
-        <h1 id="pageTitle">解决方案AI助手 · Solution AI Mate</h1>
-        <p class="hero-copy" id="pageCopy">面向解决方案工作的 AI 助手，辅助方案洞察、信息整理、内容生成、技术分析和工作提效。</p>
-      </section>
+        <section class="hero">
+          <p class="eyebrow" id="pageEyebrow">方案精选</p>
+          <h1 id="pageTitle">解决方案AI助手 · Solution AI Mate</h1>
+          <p class="hero-copy" id="pageCopy">面向解决方案工作的 AI 助手，辅助方案洞察、信息整理、内容生成、技术分析和工作提效。</p>
+        </section>
 
-      <section class="toolbar" aria-label="筛选">
-        <div class="source-tabs" id="sourceTabs" hidden>
-          <button class="active" data-source="all">全部</button>
-          <button data-source="firsthand">一手信源</button>
-          <button data-source="media">资讯</button>
-          <button data-source="social">推文</button>
-        </div>
-        <div class="segmented" id="categoryTabs">
-          <button class="active" data-category="all">全部</button>
-          <button data-category="ai-models">模型</button>
-          <button data-category="ai-products">产品</button>
-          <button data-category="industry">行业</button>
-          <button data-category="paper">论文</button>
-          <button data-category="tip">技巧</button>
-        </div>
-        <label class="search">
-          <span>搜索</span>
-          <input id="searchInput" type="search" placeholder="OpenAI / Sora / RAG" autocomplete="off" />
-        </label>
-        <button class="refresh-button" id="refreshButton" title="刷新数据" aria-label="刷新数据">↻</button>
-      </section>
+        <section class="toolbar" aria-label="筛选">
+          <div class="source-tabs" id="sourceTabs" hidden>
+            <button class="active" data-source="all">全部</button>
+            <button data-source="firsthand">一手信源</button>
+            <button data-source="media">资讯</button>
+            <button data-source="social">推文</button>
+          </div>
+          <div class="segmented" id="categoryTabs">
+            <button class="active" data-category="all">全部</button>
+            <button data-category="ai-models">模型</button>
+            <button data-category="ai-products">产品</button>
+            <button data-category="industry">行业</button>
+            <button data-category="paper">论文</button>
+            <button data-category="tip">技巧</button>
+          </div>
+          <label class="search">
+            <span>搜索</span>
+            <input id="searchInput" type="search" placeholder="OpenAI / Sora / RAG" autocomplete="off" />
+          </label>
+          <button class="refresh-button" id="refreshButton" title="刷新数据" aria-label="刷新数据">↻</button>
+        </section>
 
-      <section class="summary-strip" aria-label="新闻概览">
-        <div>
-          <span>条目</span>
-          <strong id="totalCount">--</strong>
-        </div>
-        <div>
-          <span>信源</span>
-          <strong id="sourceCount">--</strong>
-        </div>
-        <div>
-          <span>最高分</span>
-          <strong id="topScore">--</strong>
-        </div>
-        <div>
-          <span>更新</span>
-          <strong id="lastUpdated">--</strong>
-        </div>
-      </section>
+        <section class="summary-strip" aria-label="新闻概览">
+          <div>
+            <span>条目</span>
+            <strong id="totalCount">--</strong>
+          </div>
+          <div>
+            <span>信源</span>
+            <strong id="sourceCount">--</strong>
+          </div>
+          <div>
+            <span>最高分</span>
+            <strong id="topScore">--</strong>
+          </div>
+          <div>
+            <span>更新</span>
+            <strong id="lastUpdated">--</strong>
+          </div>
+        </section>
 
-      <section class="timeline" id="timelineList" aria-label="解决方案AI助手方案精选">
-        <div class="empty">正在加载最新方案洞察。</div>
-      </section>
+        <section class="timeline" id="timelineList" aria-label="解决方案AI助手方案精选">
+          <div class="empty">正在加载最新方案洞察。</div>
+        </section>
 
-      <section class="screen-board" id="screenBoard" aria-label="解决方案AI助手大屏" hidden>
-        <div class="empty">正在加载最新方案洞察。</div>
-      </section>
+        <section class="screen-board" id="screenBoard" aria-label="解决方案AI助手大屏" hidden>
+          <div class="empty">正在加载最新方案洞察。</div>
+        </section>
 
-      <section class="radar-board" id="radarBoard" aria-label="解决方案AI助手论文精读" hidden>
-        <div class="empty">正在加载今日论文精读候选。</div>
-      </section>
+        <section class="radar-board" id="radarBoard" aria-label="解决方案AI助手论文精读" hidden>
+          <div class="empty">正在加载今日论文精读候选。</div>
+        </section>
+      </div>
     </main>
 
-    <script src="/app.js?v=20260529-solution-ai-mate" type="module"></script>
+    <script src="/app.js?v=20260529-sidebar-workspace" type="module"></script>
   </body>
 </html>

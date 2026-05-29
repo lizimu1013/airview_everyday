@@ -41,6 +41,7 @@ const els = {
   pageEyebrow: document.querySelector("#pageEyebrow"),
   pageTitle: document.querySelector("#pageTitle"),
   pageCopy: document.querySelector("#pageCopy"),
+  topbarTitle: document.querySelector("#topbarTitle"),
   clockTime: document.querySelector("#clockTime"),
   clockDate: document.querySelector("#clockDate"),
   totalCount: document.querySelector("#totalCount"),
@@ -56,9 +57,33 @@ const els = {
   timelineList: document.querySelector("#timelineList"),
   screenBoard: document.querySelector("#screenBoard"),
   radarBoard: document.querySelector("#radarBoard"),
+  themeToggle: document.querySelector("#themeToggle"),
   viewLinks: document.querySelectorAll("[data-view-link]"),
   feedLinks: document.querySelectorAll("[data-feed-link]"),
 };
+
+function setTheme(mode) {
+  const theme = mode === "dark" ? "dark" : "light";
+  document.body.classList.toggle("theme-dark", theme === "dark");
+  if (els.themeToggle) {
+    els.themeToggle.lastElementChild.textContent = theme === "dark" ? "暗色 / 亮色" : "亮色 / 暗色";
+  }
+  try {
+    window.localStorage.setItem("solution-ai-mate-theme", theme);
+  } catch {
+    // Theme persistence is optional.
+  }
+}
+
+function initTheme() {
+  let theme = "light";
+  try {
+    theme = window.localStorage.getItem("solution-ai-mate-theme") || "light";
+  } catch {
+    theme = "light";
+  }
+  setTheme(theme);
+}
 
 function formatClock() {
   const now = new Date();
@@ -248,6 +273,7 @@ function applyView() {
     els.pageEyebrow.textContent = "论文精读";
     els.pageTitle.textContent = "解决方案AI助手 · 论文精读";
     els.pageCopy.textContent = "聚焦 AI Agent、AI Coding、RAG 与无线通信网络方向，筛选可转化为方案工作的每日精读候选。";
+    els.topbarTitle.textContent = "论文精读";
   } else {
     els.pageEyebrow.textContent = state.feed === "all" ? "信息库" : "方案精选";
     els.pageTitle.textContent = state.feed === "all" ? "解决方案AI助手 · 信息库" : "解决方案AI助手 · Solution AI Mate";
@@ -255,6 +281,11 @@ function applyView() {
       state.feed === "all"
         ? "汇总可用于方案洞察、技术分析和内容生成的信息线索，按发布时间持续更新。"
         : "面向解决方案工作的 AI 助手，辅助方案洞察、信息整理、内容生成、技术分析和工作提效。";
+    els.topbarTitle.textContent = state.feed === "all" ? "全部 AI 动态" : "精选";
+  }
+
+  if (isScreen) {
+    els.topbarTitle.textContent = "大屏展示";
   }
 
   els.navLinks.forEach((link) => link.classList.remove("active"));
@@ -670,12 +701,16 @@ els.searchInput.addEventListener("input", () => {
 });
 
 els.refreshButton.addEventListener("click", fetchHot);
+els.themeToggle?.addEventListener("click", () => {
+  setTheme(document.body.classList.contains("theme-dark") ? "light" : "dark");
+});
 els.radarBoard.addEventListener("click", (event) => {
   const button = event.target.closest("[data-radar-refresh]");
   if (!button) return;
   fetchRadar(true);
 });
 
+initTheme();
 applyView();
 formatClock();
 setInterval(formatClock, 1000);
