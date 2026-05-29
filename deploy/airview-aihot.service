@@ -9,6 +9,7 @@ WorkingDirectory=/opt/aihot.muchu.cloud/current
 Environment=NODE_ENV=production
 Environment=HOST=127.0.0.1
 Environment=PORT=18173
+EnvironmentFile=-/etc/airview-aihot.env
 ExecStart=/usr/bin/node /opt/aihot.muchu.cloud/current/server.js
 Restart=always
 RestartSec=3

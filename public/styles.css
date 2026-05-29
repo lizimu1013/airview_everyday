@@ -483,6 +483,209 @@ h1 {
   background: var(--panel);
 }
 
+.radar-mode .hero {
+  padding-bottom: 20px;
+}
+
+.radar-board {
+  display: grid;
+  gap: 18px;
+  padding-bottom: 40px;
+}
+
+.radar-overview {
+  position: sticky;
+  top: 0;
+  z-index: 8;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  gap: 10px;
+  padding: 12px 0;
+  background: rgba(246, 247, 243, 0.92);
+  backdrop-filter: blur(12px);
+}
+
+.radar-overview div,
+.radar-refresh,
+.radar-notes > div,
+.radar-paper {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.radar-overview div {
+  min-height: 58px;
+  padding: 10px 14px;
+}
+
+.radar-overview span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.radar-overview strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 22px;
+}
+
+.radar-refresh {
+  min-width: 88px;
+  min-height: 58px;
+  color: var(--green);
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.radar-refresh:hover {
+  background: var(--green-soft);
+}
+
+.radar-notes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.radar-notes > div {
+  min-width: 0;
+  padding: 16px;
+}
+
+.radar-notes h2 {
+  margin: 0 0 10px;
+  color: var(--green);
+  font-size: 15px;
+}
+
+.radar-notes ol {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 18px;
+  color: #334235;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.radar-sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.radar-sources span,
+.radar-tags span {
+  padding: 5px 9px;
+  color: #4f5d50;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel-soft);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.radar-list {
+  display: grid;
+  gap: 14px;
+}
+
+.radar-paper {
+  padding: 20px;
+}
+
+.radar-paper header,
+.radar-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.radar-rank,
+.radar-score,
+.radar-worth {
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.radar-rank {
+  color: #fff;
+  background: var(--text);
+}
+
+.radar-score {
+  color: var(--yellow);
+  border: 1px solid #edd59f;
+  background: #fff8e7;
+}
+
+.radar-worth.yes {
+  color: var(--green);
+  border: 1px solid #b9dfca;
+  background: var(--green-soft);
+}
+
+.radar-worth.no {
+  color: var(--muted);
+  border: 1px solid var(--line);
+  background: var(--panel-soft);
+}
+
+.radar-paper h2 {
+  margin: 14px 0 8px;
+  font-size: 24px;
+  line-height: 1.35;
+}
+
+.radar-paper h2 a:hover {
+  color: var(--green);
+}
+
+.radar-authors,
+.radar-summary {
+  margin: 0;
+  line-height: 1.68;
+}
+
+.radar-authors {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.radar-summary {
+  margin-top: 12px;
+  color: #344035;
+  font-size: 15px;
+}
+
+.radar-paper dl {
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr);
+  gap: 10px 12px;
+  margin: 16px 0 0;
+  padding: 14px;
+  border-left: 3px solid var(--green);
+  border-radius: 8px;
+  background: #f5faf6;
+}
+
+.radar-paper dt {
+  color: var(--green);
+  font-weight: 900;
+}
+
+.radar-paper dd {
+  margin: 0;
+  color: #3c4b3e;
+  line-height: 1.6;
+}
+
 body.is-screen {
   overflow: hidden;
   color: var(--text);
@@ -814,6 +1017,12 @@ body.is-screen {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .radar-overview,
+  .radar-notes {
+    grid-template-columns: 1fr;
+    position: static;
+  }
 }
 
 @media (max-width: 620px) {
@@ -858,6 +1067,10 @@ body.is-screen {
   }
 
   .focus {
+    grid-template-columns: 1fr;
+  }
+
+  .radar-paper dl {
     grid-template-columns: 1fr;
   }
 }

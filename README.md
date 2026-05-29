@@ -24,6 +24,7 @@ PORT=8080 npm start
 
 - 自动读取 AI HOT 精选实时条目
 - 新增全部动态页：`/all`，使用全量信息流并支持信源类型筛选
+- 新增通信论文雷达：`/communication`，扫描可访问论文源并生成不超过 10 篇精读候选
 - 5 分钟自动刷新，支持手动刷新
 - 按模型、产品、行业、论文、技巧分类筛选
 - 支持服务端关键词搜索
@@ -35,3 +36,19 @@ PORT=8080 npm start
 ## 数据源说明
 
 AI HOT 的公开 API 目前是测试版，适合内部展示和轻量轮询。摘要由上游 LLM 生成，正式引用时应打开卡片里的原文链接核对。
+
+## 论文雷达环境变量
+
+通信论文雷达不会把模型 API Key 写入仓库或前端。生产环境通过 systemd 的 `/etc/airview-aihot.env` 注入：
+
+```text
+PAPER_RADAR_BASE_URL=https://api.muchu.cloud/v1
+PAPER_RADAR_MODEL=gpt-5.4-mini
+PAPER_RADAR_API_KEY=...
+```
+
+如需纳入 Google Scholar Alert，可追加公开可访问的 RSS：
+
+```text
+GOOGLE_SCHOLAR_ALERT_FEEDS=https://...
+```

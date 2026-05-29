@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>AI HOT 时间轴</title>
-    <link rel="stylesheet" href="/styles.css?v=20260529-all" />
+    <link rel="stylesheet" href="/styles.css?v=20260529-paper-radar" />
   </head>
   <body>
     <main class="page" aria-live="polite">
@@ -16,6 +16,7 @@
         <nav class="nav-links" aria-label="主导航">
           <a class="active" href="/" data-view-link="timeline" data-feed-link="selected">精选</a>
           <a href="/all" data-feed-link="all">全部</a>
+          <a href="/communication" data-view-link="radar">通信论文</a>
           <a href="/?view=screen" data-view-link="screen">大屏</a>
           <a href="https://aihot.virxact.com/daily" target="_blank" rel="noreferrer">日报</a>
           <a href="https://aihot.virxact.com/agent" target="_blank" rel="noreferrer">Agent 接入</a>
@@ -83,8 +84,12 @@
       <section class="screen-board" id="screenBoard" aria-label="AI 热点大屏" hidden>
         <div class="empty">正在加载最新 AI 热点。</div>
       </section>
+
+      <section class="radar-board" id="radarBoard" aria-label="通信论文雷达" hidden>
+        <div class="empty">正在加载今日论文雷达。</div>
+      </section>
     </main>
 
-    <script src="/app.js?v=20260529-all" type="module"></script>
+    <script src="/app.js?v=20260529-paper-radar" type="module"></script>
   </body>
 </html>

@@ -1,6 +1,6 @@
 const queryParams = new URLSearchParams(window.location.search);
 const routePath = window.location.pathname.replace(/\/+$/, "") || "/";
-const initialView = queryParams.get("view") === "screen" ? "screen" : "timeline";
+const initialView = queryParams.get("view") === "screen" ? "screen" : routePath === "/communication" ? "radar" : "timeline";
 
 const state = {
   view: initialView,
@@ -9,7 +9,9 @@ const state = {
   category: "all",
   query: "",
   items: [],
+  radar: null,
   loading: false,
+  radarLoading: false,
   refreshMs: 5 * 60 * 1000,
 };
 
@@ -53,6 +55,7 @@ const els = {
   refreshButton: document.querySelector("#refreshButton"),
   timelineList: document.querySelector("#timelineList"),
   screenBoard: document.querySelector("#screenBoard"),
+  radarBoard: document.querySelector("#radarBoard"),
   viewLinks: document.querySelectorAll("[data-view-link]"),
   feedLinks: document.querySelectorAll("[data-feed-link]"),
 };
@@ -204,26 +207,54 @@ function focusLine(item) {
   return `来自 ${source}，属于 ${category}。适合快速判断这条动态对产品、技术或行业判断的影响。`;
 }
 
+function asArray(value) {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  if (typeof value === "string" && value.trim()) return [value.trim()];
+  return [];
+}
+
+function formatDateTime(value) {
+  if (!value) return "--";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString("zh-CN", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+}
+
 function applyView() {
   const isScreen = state.view === "screen";
+  const isRadar = state.view === "radar";
   document.body.classList.toggle("is-screen", isScreen);
   els.page.classList.toggle("screen-mode", isScreen);
+  els.page.classList.toggle("radar-mode", isRadar);
   els.hero.hidden = isScreen;
-  els.toolbar.hidden = isScreen;
-  els.summaryStrip.hidden = isScreen;
-  els.timelineList.hidden = isScreen;
+  els.toolbar.hidden = isScreen || isRadar;
+  els.summaryStrip.hidden = isScreen || isRadar;
+  els.timelineList.hidden = isScreen || isRadar;
   els.screenBoard.hidden = !isScreen;
-  els.sourceTabs.hidden = isScreen || state.feed !== "all";
+  els.radarBoard.hidden = !isRadar;
+  els.sourceTabs.hidden = isScreen || isRadar || state.feed !== "all";
 
-  els.pageEyebrow.textContent = state.feed === "all" ? "全部动态" : "精选";
-  els.pageTitle.textContent = state.feed === "all" ? "AI 全量动态" : "AI 热点时间轴";
-  els.pageCopy.textContent =
-    state.feed === "all" ? "AI 相关资讯全量信息流，按发布时间持续更新。" : "按发布时间滚动展示当前最值得关注的 AI 动态。";
+  if (isRadar) {
+    els.pageEyebrow.textContent = "通信论文";
+    els.pageTitle.textContent = "论文雷达";
+    els.pageCopy.textContent = "聚焦 AI Agent、AI Coding、RAG 与无线通信网络方向的每日精读候选。";
+  } else {
+    els.pageEyebrow.textContent = state.feed === "all" ? "全部动态" : "精选";
+    els.pageTitle.textContent = state.feed === "all" ? "AI 全量动态" : "AI 热点时间轴";
+    els.pageCopy.textContent =
+      state.feed === "all" ? "AI 相关资讯全量信息流，按发布时间持续更新。" : "按发布时间滚动展示当前最值得关注的 AI 动态。";
+  }
 
   els.navLinks.forEach((link) => link.classList.remove("active"));
-  if (isScreen) {
+  if (isScreen || isRadar) {
     els.viewLinks.forEach((link) => {
-      if (link.dataset.viewLink === "screen") link.classList.add("active");
+      if (link.dataset.viewLink === state.view) link.classList.add("active");
     });
   } else {
     els.feedLinks.forEach((link) => {
@@ -266,6 +297,27 @@ async function fetchHot() {
   }
 }
 
+async function fetchRadar(refresh = false) {
+  if (state.radarLoading) return;
+  state.radarLoading = true;
+  setConnection(true, "扫描中");
+  els.radarBoard.innerHTML = `<div class="empty">正在扫描可访问论文源并生成精读候选。</div>`;
+
+  try {
+    const response = await fetch(`/api/paper-radar${refresh ? "?refresh=1" : ""}`);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "论文雷达生成失败");
+    state.radar = data;
+    renderRadar(data);
+    setConnection(true, data.cached ? "雷达缓存" : "实时同步");
+  } catch (error) {
+    setConnection(false, "扫描失败");
+    renderRadarError(error);
+  } finally {
+    state.radarLoading = false;
+  }
+}
+
 function render() {
   const items = filterItems(sortByTime(state.items));
   const sources = new Set(items.map((item) => item.source).filter(Boolean));
@@ -286,6 +338,109 @@ function render() {
   } else {
     renderTimeline(items);
   }
+}
+
+function renderRadar(report) {
+  const items = asArray(report.items).slice(0, 10);
+  const topReads = asArray(report.topReads);
+  const saveOnly = asArray(report.saveOnly);
+  const filteredReasons = asArray(report.filteredReasons);
+  const sourceNotes = asArray(report.sourceNotes);
+
+  const chips = (values) => asArray(values).map((value) => `<span>${escapeHtml(value)}</span>`).join("");
+  const listItems = (values) =>
+    asArray(values)
+      .map((value) => `<li>${escapeHtml(value)}</li>`)
+      .join("") || "<li>暂无</li>";
+
+  const paperHtml =
+    items
+      .map((item, index) => {
+        const score = Number(item.relevanceScore || item.relevance_score || 0);
+        const worth = Boolean(item.worthDeepRead ?? item.worth_deep_read ?? item.worthRead);
+        const link = item.link || item.url || "#";
+        const title = item.title || "标题未知";
+        const authors = item.authors || "作者未知";
+        const institutions = item.institutions || "机构未知或需原文确认";
+        const summary = item.summary || item.abstract || "摘要信息不足，需打开原文确认。";
+        const contribution = item.contribution || item.possibleContribution || item.possible_contribution || "需原文确认。";
+        const reason = item.deepReadReason || item.deep_read_reason || item.reason || "需结合原文判断。";
+        const directions = item.transferDirections || item.transfer_directions || [];
+        const keywords = item.keywords || [];
+
+        return `
+          <article class="radar-paper">
+            <header>
+              <span class="radar-rank">${String(index + 1).padStart(2, "0")}</span>
+              <span class="radar-score">相关性 ${score || "--"}/5</span>
+              <span class="radar-worth ${worth ? "yes" : "no"}">${worth ? "值得精读" : "收藏观察"}</span>
+            </header>
+            <h2><a href="${escapeHtml(link)}" target="_blank" rel="noreferrer">${escapeHtml(title)}</a></h2>
+            <p class="radar-authors">${escapeHtml(authors)} · ${escapeHtml(institutions)}</p>
+            <p class="radar-summary">${escapeHtml(summary)}</p>
+            <div class="radar-tags">${chips(keywords)}</div>
+            <dl>
+              <dt>可能贡献</dt>
+              <dd>${escapeHtml(contribution)}</dd>
+              <dt>精读理由</dt>
+              <dd>${escapeHtml(reason)}</dd>
+              <dt>可转化方向</dt>
+              <dd class="radar-tags">${chips(directions) || "<span>需确认</span>"}</dd>
+            </dl>
+            <a class="origin-link" href="${escapeHtml(link)}" target="_blank" rel="noreferrer">查看论文</a>
+          </article>
+        `;
+      })
+      .join("") || `<div class="empty">今天没有从可访问来源中筛出足够相关的论文。</div>`;
+
+  els.radarBoard.innerHTML = `
+    <section class="radar-overview">
+      <div>
+        <span>候选源</span>
+        <strong>${escapeHtml(String(report.candidateCount ?? "--"))}</strong>
+      </div>
+      <div>
+        <span>入选</span>
+        <strong>${items.length || "--"}</strong>
+      </div>
+      <div>
+        <span>生成</span>
+        <strong>${escapeHtml(formatDateTime(report.generatedAt || report.scannedAt))}</strong>
+      </div>
+      <button class="radar-refresh" data-radar-refresh type="button">刷新</button>
+    </section>
+
+    <section class="radar-notes">
+      <div>
+        <h2>今日精读</h2>
+        <ol>${listItems(topReads)}</ol>
+      </div>
+      <div>
+        <h2>收藏观察</h2>
+        <ol>${listItems(saveOnly)}</ol>
+      </div>
+      <div>
+        <h2>过滤原因</h2>
+        <ol>${listItems(filteredReasons)}</ol>
+      </div>
+    </section>
+
+    <section class="radar-sources">
+      ${sourceNotes.map((note) => `<span>${escapeHtml(note)}</span>`).join("")}
+    </section>
+
+    <section class="radar-list">
+      ${paperHtml}
+    </section>
+  `;
+}
+
+function renderRadarError(error) {
+  els.radarBoard.innerHTML = `
+    <div class="empty">
+      论文雷达暂不可用：${escapeHtml(error instanceof Error ? error.message : String(error))}
+    </div>
+  `;
 }
 
 function renderTimeline(items) {
@@ -486,9 +641,18 @@ els.searchInput.addEventListener("input", () => {
 });
 
 els.refreshButton.addEventListener("click", fetchHot);
+els.radarBoard.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-radar-refresh]");
+  if (!button) return;
+  fetchRadar(true);
+});
 
 applyView();
 formatClock();
 setInterval(formatClock, 1000);
-fetchHot();
-setInterval(fetchHot, state.refreshMs);
+if (state.view === "radar") {
+  fetchRadar();
+} else {
+  fetchHot();
+  setInterval(fetchHot, state.refreshMs);
+}
