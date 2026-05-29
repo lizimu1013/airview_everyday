@@ -207,6 +207,10 @@ function focusLine(item) {
   return `来自 ${source}，属于 ${category}。适合快速判断这条动态对产品、技术或行业判断的影响。`;
 }
 
+function imageFor(item) {
+  return item.imageUrl || item.image || item.cover || item.thumbnail || "";
+}
+
 function asArray(value) {
   if (Array.isArray(value)) return value.filter(Boolean);
   if (typeof value === "string" && value.trim()) return [value.trim()];
@@ -456,6 +460,14 @@ function renderTimeline(items) {
       const entries = groupItems
         .map((item) => {
           const score = scoreFor(item);
+          const imageUrl = imageFor(item);
+          const media = imageUrl
+            ? `
+                <a class="entry-media" href="${escapeHtml(item.url)}" target="_blank" rel="noreferrer" aria-label="查看原文图片">
+                  <img src="${escapeHtml(imageUrl)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+                </a>
+              `
+            : "";
           const tags = tagsFor(item)
             .map((tag) => `<span>${escapeHtml(tag)}</span>`)
             .join("");
@@ -467,20 +479,23 @@ function renderTimeline(items) {
                 <span>${escapeHtml(toRelativeTime(item.publishedAt))}</span>
               </div>
               <div class="entry-node" aria-hidden="true"></div>
-              <div class="entry-card">
-                <div class="entry-meta">
-                  <span class="source-avatar">${escapeHtml(sourceInitial(item.source))}</span>
-                  <span class="source-name">${escapeHtml(item.source || "未知信源")}</span>
-                  <span class="score">${state.feed === "all" ? "热度" : "精选"} ${score}</span>
+              <div class="entry-card${imageUrl ? " has-media" : ""}">
+                <div class="entry-content">
+                  <div class="entry-meta">
+                    <span class="source-avatar">${escapeHtml(sourceInitial(item.source))}</span>
+                    <span class="source-name">${escapeHtml(item.source || "未知信源")}</span>
+                    <span class="score">${state.feed === "all" ? "热度" : "精选"} ${score}</span>
+                  </div>
+                  <h2><a href="${escapeHtml(item.url)}" target="_blank" rel="noreferrer">${escapeHtml(item.title)}</a></h2>
+                  <p class="summary">${escapeHtml(item.summary || "这条新闻暂无摘要，请打开原文查看详情。")}</p>
+                  <div class="tag-row">${tags}</div>
+                  <div class="focus">
+                    <b>看点</b>
+                    <span>${escapeHtml(focusLine(item))}</span>
+                  </div>
+                  <a class="origin-link" href="${escapeHtml(item.url)}" target="_blank" rel="noreferrer">查看原文</a>
                 </div>
-                <h2><a href="${escapeHtml(item.url)}" target="_blank" rel="noreferrer">${escapeHtml(item.title)}</a></h2>
-                <p class="summary">${escapeHtml(item.summary || "这条新闻暂无摘要，请打开原文查看详情。")}</p>
-                <div class="tag-row">${tags}</div>
-                <div class="focus">
-                  <b>看点</b>
-                  <span>${escapeHtml(focusLine(item))}</span>
-                </div>
-                <a class="origin-link" href="${escapeHtml(item.url)}" target="_blank" rel="noreferrer">查看原文</a>
+                ${media}
               </div>
             </article>
           `;
@@ -497,6 +512,18 @@ function renderTimeline(items) {
     .join("");
 
   els.timelineList.innerHTML = html;
+  els.timelineList.querySelectorAll(".entry-media img").forEach((img) => {
+    img.addEventListener(
+      "error",
+      () => {
+        const media = img.closest(".entry-media");
+        const card = img.closest(".entry-card");
+        media?.remove();
+        card?.classList.remove("has-media");
+      },
+      { once: true },
+    );
+  });
 }
 
 function renderScreen(items) {

@@ -13,6 +13,13 @@ const userAgent =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 airview-everyday/0.1.0";
 const cacheTtlMs = 120_000;
 const cache = new Map();
+const imageCacheTtlMs = 12 * 60 * 60 * 1000;
+const imageNegativeTtlMs = 90 * 60 * 1000;
+const imageFetchTimeoutMs = 3500;
+const imageReadLimitBytes = 450_000;
+const imageFetchConcurrency = 6;
+const imageCache = new Map();
+const imageInflight = new Map();
 const radarCacheTtlMs = 12 * 60 * 60 * 1000;
 const radarCache = new Map();
 const appRoutes = new Set(["/all", "/all/", "/screen", "/screen/", "/communication", "/communication/"]);
@@ -97,8 +104,324 @@ function buildItemsUrl(reqUrl) {
   return out;
 }
 
+function decodeHtmlEntities(value = "") {
+  return String(value)
+    .replace(/&#(\d+);/g, (_, code) => String.fromCodePoint(Number(code)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, code) => String.fromCodePoint(parseInt(code, 16)))
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
+}
+
+function toHttpUrl(value, baseUrl) {
+  if (!value || typeof value !== "string") return "";
+  const trimmed = decodeHtmlEntities(value).trim();
+  if (!trimmed || /^data:/i.test(trimmed)) return "";
+
+  try {
+    const url = new URL(trimmed, baseUrl);
+    if (url.protocol !== "https:" && url.protocol !== "http:") return "";
+    url.hash = "";
+    return url.toString();
+  } catch {
+    return "";
+  }
+}
+
+function parseTagAttrs(tag) {
+  const attrs = {};
+  const attrRe = /([a-zA-Z_:][-a-zA-Z0-9_:.]*)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/g;
+  let match;
+
+  while ((match = attrRe.exec(tag))) {
+    attrs[match[1].toLowerCase()] = decodeHtmlEntities(match[2] || match[3] || match[4] || "");
+  }
+
+  return attrs;
+}
+
+function firstImageUrl(values, baseUrl) {
+  for (const value of values) {
+    if (Array.isArray(value)) {
+      const nested = firstImageUrl(value, baseUrl);
+      if (nested) return nested;
+      continue;
+    }
+
+    if (value && typeof value === "object") {
+      const nested = firstImageUrl([value.url, value.src, value.content], baseUrl);
+      if (nested) return nested;
+      continue;
+    }
+
+    const url = toHttpUrl(value, baseUrl);
+    if (url) return url;
+  }
+
+  return "";
+}
+
+function extractJsonLdImage(html, pageUrl) {
+  const scriptRe = /<script\b[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+  let match;
+
+  while ((match = scriptRe.exec(html))) {
+    try {
+      const data = JSON.parse(decodeHtmlEntities(match[1]).trim());
+      const queue = Array.isArray(data) ? [...data] : [data];
+
+      while (queue.length) {
+        const item = queue.shift();
+        if (!item || typeof item !== "object") continue;
+
+        const image = firstImageUrl([item.image, item.thumbnailUrl], pageUrl);
+        if (image) return image;
+
+        Object.values(item).forEach((value) => {
+          if (value && typeof value === "object") queue.push(value);
+        });
+      }
+    } catch {
+      // Some publishers serve relaxed JSON-LD. Meta tags still cover the common case.
+    }
+  }
+
+  return "";
+}
+
+function isLikelyContentImage(url) {
+  if (!url) return false;
+  return !/\/(?:logo|icon|avatar|sprite|blank|default|placeholder|loading|transparent|pixel|spacer)(?:[._/-]|$)|\/v2\/t\.png(?:[?#]|$)|\.(?:svg|gif)(?:[?#]|$)/i.test(
+    url,
+  );
+}
+
+function extractInlineImage(html, pageUrl) {
+  const imgRe = /<img\b[^>]*>/gi;
+  let match;
+
+  while ((match = imgRe.exec(html))) {
+    const attrs = parseTagAttrs(match[0]);
+    const image = firstImageUrl(
+      [
+        attrs["data-original"],
+        attrs["data-src"],
+        attrs["data-lazy-src"],
+        attrs["data-url"],
+        attrs.src,
+      ],
+      pageUrl,
+    );
+
+    if (isLikelyContentImage(image)) return image;
+  }
+
+  return "";
+}
+
+function extractImageFromHtml(html, pageUrl) {
+  const candidates = [];
+  const metaRe = /<meta\b[^>]*>/gi;
+  let match;
+
+  while ((match = metaRe.exec(html))) {
+    const attrs = parseTagAttrs(match[0]);
+    const key = (attrs.property || attrs.name || attrs.itemprop || "").toLowerCase();
+    if (
+      [
+        "og:image",
+        "og:image:url",
+        "og:image:secure_url",
+        "twitter:image",
+        "twitter:image:src",
+        "thumbnail",
+        "image",
+      ].includes(key)
+    ) {
+      candidates.push(attrs.content);
+    }
+  }
+
+  const linkRe = /<link\b[^>]*>/gi;
+  while ((match = linkRe.exec(html))) {
+    const attrs = parseTagAttrs(match[0]);
+    if (/\bimage_src\b/i.test(attrs.rel || "")) candidates.push(attrs.href);
+  }
+
+  return firstImageUrl(candidates, pageUrl) || extractJsonLdImage(html, pageUrl) || extractInlineImage(html, pageUrl);
+}
+
+async function readLimitedText(response, limitBytes) {
+  const reader = response.body?.getReader?.();
+  if (!reader) return response.text();
+
+  const decoder = new TextDecoder();
+  let bytes = 0;
+  let text = "";
+
+  while (bytes < limitBytes) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    const remaining = limitBytes - bytes;
+    const chunk = value.byteLength > remaining ? value.slice(0, remaining) : value;
+    text += decoder.decode(chunk, { stream: true });
+    bytes += chunk.byteLength;
+
+    if (value.byteLength > remaining) {
+      await reader.cancel().catch(() => {});
+      break;
+    }
+  }
+
+  return text + decoder.decode();
+}
+
+async function fetchPageImage(pageUrl) {
+  const safeUrl = toHttpUrl(pageUrl);
+  if (!safeUrl) return "";
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), imageFetchTimeoutMs);
+
+  try {
+    const response = await fetch(safeUrl, {
+      redirect: "follow",
+      signal: controller.signal,
+      headers: {
+        "user-agent": userAgent,
+        accept: "text/html,application/xhtml+xml;q=0.9,*/*;q=0.5",
+      },
+    });
+    if (!response.ok) return "";
+
+    const contentType = response.headers.get("content-type") || "";
+    if (contentType && !/text\/html|application\/xhtml\+xml/i.test(contentType)) return "";
+
+    const html = await readLimitedText(response, imageReadLimitBytes);
+    return extractImageFromHtml(html, response.url || safeUrl);
+  } catch {
+    return "";
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function readImageCache(pageUrl) {
+  const cached = imageCache.get(pageUrl);
+  if (!cached) return { hit: false, imageUrl: "" };
+
+  const ttl = cached.imageUrl ? imageCacheTtlMs : imageNegativeTtlMs;
+  if (Date.now() - cached.at > ttl) {
+    imageCache.delete(pageUrl);
+    return { hit: false, imageUrl: "" };
+  }
+
+  return { hit: true, imageUrl: cached.imageUrl };
+}
+
+function fetchPageImageCached(pageUrl) {
+  const cached = readImageCache(pageUrl);
+  if (cached.hit) return Promise.resolve(cached.imageUrl);
+  if (imageInflight.has(pageUrl)) return imageInflight.get(pageUrl);
+
+  const task = fetchPageImage(pageUrl)
+    .then((imageUrl) => {
+      imageCache.set(pageUrl, { at: Date.now(), imageUrl: imageUrl || "" });
+      return imageUrl || "";
+    })
+    .catch(() => {
+      imageCache.set(pageUrl, { at: Date.now(), imageUrl: "" });
+      return "";
+    })
+    .finally(() => imageInflight.delete(pageUrl));
+
+  imageInflight.set(pageUrl, task);
+  return task;
+}
+
+async function mapWithConcurrency(items, concurrency, mapper) {
+  let next = 0;
+  await Promise.all(
+    Array.from({ length: Math.min(concurrency, items.length) }, async () => {
+      while (next < items.length) {
+        const index = next;
+        next += 1;
+        await mapper(items[index], index);
+      }
+    }),
+  );
+}
+
+function knownItemImage(item) {
+  return firstImageUrl(
+    [
+      item.imageUrl,
+      item.image,
+      item.cover,
+      item.coverUrl,
+      item.thumbnail,
+      item.thumbnailUrl,
+      item.ogImage,
+      item.picture,
+      item.pic,
+      item.logo,
+      item.media,
+    ],
+    item.url,
+  );
+}
+
+async function warmImageCache(entries) {
+  if (!entries.length) return;
+  await mapWithConcurrency(entries, 3, async ({ pageUrl }) => {
+    await fetchPageImageCached(pageUrl);
+  });
+}
+
+async function enrichItemsWithImages(items, mode) {
+  if (!Array.isArray(items) || !items.length) return items;
+
+  const enriched = items.map((item) => ({ ...item }));
+  const pending = [];
+
+  enriched.forEach((item) => {
+    const existingImage = knownItemImage(item);
+    if (existingImage) {
+      item.imageUrl = existingImage;
+      return;
+    }
+
+    const pageUrl = toHttpUrl(item.url);
+    if (!pageUrl) return;
+
+    const cached = readImageCache(pageUrl);
+    if (cached.hit) {
+      if (cached.imageUrl) item.imageUrl = cached.imageUrl;
+      return;
+    }
+
+    pending.push({ item, pageUrl });
+  });
+
+  const immediateLimit = mode === "all" ? 18 : 24;
+  const immediate = pending.slice(0, immediateLimit);
+  await mapWithConcurrency(immediate, imageFetchConcurrency, async ({ item, pageUrl }) => {
+    const imageUrl = await fetchPageImageCached(pageUrl);
+    if (imageUrl) item.imageUrl = imageUrl;
+  });
+
+  const warmEntries = pending.slice(immediateLimit, immediateLimit + 42);
+  void warmImageCache(warmEntries).catch(() => {});
+
+  return enriched;
+}
+
 async function proxyHot(req, res) {
   const reqUrl = new URL(req.url, `http://${req.headers.host}`);
+  const mode = reqUrl.searchParams.get("mode") === "all" ? "all" : "selected";
   const upstream = buildItemsUrl(reqUrl);
   const cacheKey = upstream.toString();
   const now = Date.now();
@@ -127,6 +450,10 @@ async function proxyHot(req, res) {
     if (!response.ok) {
       sendJson(res, response.status, body);
       return;
+    }
+
+    if (Array.isArray(body.items)) {
+      body = { ...body, items: await enrichItemsWithImages(body.items, mode) };
     }
 
     cache.set(cacheKey, { at: now, body });

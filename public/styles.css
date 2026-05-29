@@ -382,6 +382,32 @@ h1 {
   border-color: var(--line-strong);
 }
 
+.entry-card.has-media {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 224px;
+  gap: 18px;
+  align-items: start;
+}
+
+.entry-content {
+  min-width: 0;
+}
+
+.entry-media {
+  display: block;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-soft);
+}
+
+.entry-media img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
 .entry-meta {
   flex-wrap: wrap;
   gap: 8px;
@@ -1056,6 +1082,18 @@ body.is-screen {
 
   .entry-card {
     padding: 18px;
+  }
+
+  .entry-card.has-media {
+    display: block;
+  }
+
+  .entry-media {
+    margin-top: 16px;
+  }
+
+  .entry-media img {
+    aspect-ratio: 16 / 9;
   }
 
   .score {
