@@ -885,7 +885,6 @@ body.theme-dark .team-list dd {
 
 .radar-overview div,
 .radar-refresh,
-.radar-notes > div,
 .radar-paper {
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -920,33 +919,6 @@ body.theme-dark .team-list dd {
 
 .radar-refresh:hover {
   background: var(--green-soft);
-}
-
-.radar-notes {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.radar-notes > div {
-  min-width: 0;
-  padding: 16px;
-}
-
-.radar-notes h2 {
-  margin: 0 0 10px;
-  color: var(--green);
-  font-size: 15px;
-}
-
-.radar-notes ol {
-  display: grid;
-  gap: 8px;
-  margin: 0;
-  padding-left: 18px;
-  color: #334235;
-  font-size: 14px;
-  line-height: 1.5;
 }
 
 .radar-sources {
@@ -3758,7 +3730,6 @@ body.theme-dark .arena-shell {
   }
 
   .radar-overview,
-  .radar-notes,
   .about-layout {
     grid-template-columns: 1fr;
     position: static;

@@ -808,15 +808,8 @@ function render() {
 
 function renderRadar(report) {
   const items = asArray(report.items).slice(0, 10);
-  const topReads = asArray(report.topReads);
-  const saveOnly = asArray(report.saveOnly);
-  const filteredReasons = asArray(report.filteredReasons);
 
   const chips = (values) => asArray(values).map((value) => `<span>${escapeHtml(value)}</span>`).join("");
-  const listItems = (values) =>
-    asArray(values)
-      .map((value) => `<li>${escapeHtml(value)}</li>`)
-      .join("") || "<li>暂无</li>";
 
   const paperHtml =
     items
@@ -876,21 +869,6 @@ function renderRadar(report) {
         <strong>${escapeHtml(formatDateTime(report.generatedAt || report.scannedAt))}</strong>
       </div>
       <button class="radar-refresh" data-radar-refresh type="button">刷新</button>
-    </section>
-
-    <section class="radar-notes">
-      <div>
-        <h2>今日精读</h2>
-        <ol>${listItems(topReads)}</ol>
-      </div>
-      <div>
-        <h2>收藏观察</h2>
-        <ol>${listItems(saveOnly)}</ol>
-      </div>
-      <div>
-        <h2>过滤原因</h2>
-        <ol>${listItems(filteredReasons)}</ol>
-      </div>
     </section>
 
     <section class="radar-list">
