@@ -777,7 +777,7 @@ async function callPaperRadarModel(sourceData) {
   }
 
   const systemPrompt = [
-    "你是用户的论文精读助手。每天扫描 arXiv、Papers with Code、Google Scholar Alert 的可访问结果，筛选与用户相关的论文，生成精读候选清单。",
+    "你是用户的 AI/通信论文速读助手。每天扫描 arXiv、Papers with Code、Google Scholar Alert 的可访问结果，筛选与用户相关的论文，生成速读候选清单。",
     `关注方向：${radarTopics.join("；")}。`,
     "输出不超过 10 篇。不要因为标题像就推荐，优先看摘要和方法；如果只是理论推导但难以工程转化，要说明。",
     "不要编造论文内容；只使用给定候选中的可访问来源。作者机构或方法细节不确定时，明确写未知或需原文确认。",

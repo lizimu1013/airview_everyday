@@ -333,18 +333,18 @@ function applyView() {
     els.pageCopy.textContent = "解决方案系统仿真团队在 AI 辅助研发和方案情报整理方向的一次实践。";
     els.topbarTitle.textContent = "关于我们";
   } else if (isRadar) {
-    els.pageEyebrow.textContent = "论文精读";
-    els.pageTitle.textContent = "解决方案AI助手 · 论文精读";
+    els.pageEyebrow.textContent = "AI/通信论文速读";
+    els.pageTitle.textContent = "解决方案AI助手 · AI/通信论文速读";
     els.pageCopy.textContent = "聚焦 AI Agent、AI Coding、RAG 与无线通信网络方向，筛选可转化为方案工作的每日精读候选。";
-    els.topbarTitle.textContent = "论文精读";
+    els.topbarTitle.textContent = "AI/通信论文速读";
   } else {
-    els.pageEyebrow.textContent = state.feed === "all" ? "信息库" : "方案精选";
-    els.pageTitle.textContent = state.feed === "all" ? "解决方案AI助手 · 信息库" : "解决方案AI助手 · Solution AI Mate";
+    els.pageEyebrow.textContent = state.feed === "all" ? "信息库" : "今日头条";
+    els.pageTitle.textContent = state.feed === "all" ? "解决方案AI助手 · 信息库" : "解决方案AI助手 · 今日头条";
     els.pageCopy.textContent =
       state.feed === "all"
         ? "汇总可用于方案洞察、技术分析和内容生成的信息线索，按发布时间持续更新。"
         : "面向解决方案工作的 AI 助手，辅助方案洞察、信息整理、内容生成、技术分析和工作提效。";
-    els.topbarTitle.textContent = state.feed === "all" ? "全部 AI 动态" : "精选";
+    els.topbarTitle.textContent = state.feed === "all" ? "全部 AI 动态" : "今日头条";
   }
 
   if (isScreen) {
@@ -406,7 +406,7 @@ async function fetchRadar(refresh = false) {
   try {
     const response = await fetch(`/api/paper-radar${refresh ? "?refresh=1" : ""}`);
     const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "论文精读候选生成失败");
+    if (!response.ok) throw new Error(data.error || "AI/通信论文速读候选生成失败");
     state.radar = data;
     renderRadar(data);
     setConnection(true, data.cached ? "候选缓存" : "实时同步");
@@ -907,7 +907,7 @@ function renderRadar(report) {
 function renderRadarError(error) {
   els.radarBoard.innerHTML = `
     <div class="empty">
-      论文精读助手暂不可用：${escapeHtml(error instanceof Error ? error.message : String(error))}
+      AI/通信论文速读助手暂不可用：${escapeHtml(error instanceof Error ? error.message : String(error))}
     </div>
   `;
 }
@@ -1379,7 +1379,7 @@ function renderTimeline(items) {
                   <div class="entry-meta">
                     <span class="source-avatar">${escapeHtml(sourceInitial(item.source))}</span>
                     <span class="source-name">${escapeHtml(item.source || "未知信源")}</span>
-                    <span class="score">${state.feed === "all" ? "热度" : "精选"} ${score}</span>
+                    <span class="score">${state.feed === "all" ? "热度" : "今日头条"} ${score}</span>
                   </div>
                   <h2><a href="${escapeHtml(item.url)}" target="_blank" rel="noreferrer">${escapeHtml(item.title)}</a></h2>
                   <p class="summary">${escapeHtml(item.summary || "这条新闻暂无摘要，请打开原文查看详情。")}</p>
@@ -1668,7 +1668,7 @@ function renderScreen(items) {
       <section class="screen-hero">
         <div class="screen-kicker">
           <span>${screenIcon("spark")} TOP STORY</span>
-          <strong>精选 ${scoreFor(lead)}</strong>
+          <strong>今日头条 ${scoreFor(lead)}</strong>
         </div>
         <h2>${escapeHtml(lead.title)}</h2>
         <p>${escapeHtml(lead.summary || "这条新闻暂无摘要，请打开原文查看详情。")}</p>
@@ -1780,7 +1780,7 @@ els.radarBoard.addEventListener("click", (event) => {
     sendItemToArena({
       title: item?.title,
       summary: item?.summary || item?.abstract || item?.contribution,
-      source: item?.source || "论文精读",
+      source: item?.source || "AI/通信论文速读",
       category: "paper",
       publishedAt: item?.publishedAt || item?.generatedAt,
       url: item?.link || item?.url,
