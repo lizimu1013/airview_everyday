@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { createReadStream, existsSync } from "node:fs";
 import { extname, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { handleArenaRequest } from "./src/arena/arena-service.js";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const publicDir = resolve(__dirname, "public");
@@ -29,6 +30,8 @@ const appRoutes = new Set([
   "/screen/",
   "/communication",
   "/communication/",
+  "/arena",
+  "/arena/",
   "/about",
   "/about/",
 ]);
@@ -938,6 +941,11 @@ const server = http.createServer(async (req, res) => {
 
   if (req.url.startsWith("/api/paper-radar")) {
     await proxyPaperRadar(req, res);
+    return;
+  }
+
+  if (req.url.startsWith("/api/arena")) {
+    await handleArenaRequest(req, res);
     return;
   }
 
