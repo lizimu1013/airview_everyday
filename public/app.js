@@ -1360,8 +1360,7 @@ function renderTimeline(items) {
                     <span>${escapeHtml(focusLine(item))}</span>
                   </div>
                   <div class="entry-actions">
-                    <a class="origin-link" href="${escapeHtml(item.url)}" target="_blank" rel="noreferrer">查看原文</a>
-                    <button class="arena-send-button" data-arena-url="${escapeHtml(item.url || "")}" type="button">送入圆桌</button>
+                    <button class="arena-send-button" data-arena-url="${escapeHtml(item.url || "")}" type="button">送入 AI 圆桌</button>
                   </div>
                 </div>
                 ${media}
