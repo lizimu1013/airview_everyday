@@ -22,7 +22,16 @@ const imageCache = new Map();
 const imageInflight = new Map();
 const radarCacheTtlMs = 12 * 60 * 60 * 1000;
 const radarCache = new Map();
-const appRoutes = new Set(["/all", "/all/", "/screen", "/screen/", "/communication", "/communication/"]);
+const appRoutes = new Set([
+  "/all",
+  "/all/",
+  "/screen",
+  "/screen/",
+  "/communication",
+  "/communication/",
+  "/about",
+  "/about/",
+]);
 const paperRadarBaseUrl = (process.env.PAPER_RADAR_BASE_URL || "https://api.muchu.cloud/v1").replace(/\/+$/, "");
 const paperRadarModel = process.env.PAPER_RADAR_MODEL || "gpt-5.4-mini";
 const paperRadarApiKey = process.env.PAPER_RADAR_API_KEY || process.env.OPENAI_API_KEY || "";

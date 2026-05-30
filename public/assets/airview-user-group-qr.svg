@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-labelledby="title desc">
+  <title id="title">AirView 用户群二维码占位</title>
+  <desc id="desc">请替换为 AirView 用户群真实二维码</desc>
+  <rect width="240" height="240" fill="#ffffff"/>
+  <rect x="12" y="12" width="216" height="216" rx="18" fill="#f5f8fc" stroke="#c8d7e8" stroke-width="2"/>
+  <g fill="#172033">
+    <path d="M32 32h54v54H32zM154 32h54v54h-54zM32 154h54v54H32z"/>
+    <path fill="#f5f8fc" d="M43 43h32v32H43zM165 43h32v32h-32zM43 165h32v32H43z"/>
+    <path d="M53 53h12v12H53zM175 53h12v12h-12zM53 175h12v12H53zM100 36h16v16h-16zM126 36h12v12h-12zM100 62h12v20h-12zM128 62h26v12h-26zM96 96h16v16H96zM126 92h12v22h-12zM150 100h16v12h-16zM184 98h22v18h-22zM96 126h34v12H96zM142 126h14v30h-14zM166 134h42v12h-42zM100 154h18v18h-18zM126 166h14v42h-14zM154 162h18v18h-18zM182 160h26v16h-26zM154 194h14v14h-14zM178 190h30v18h-30z"/>
+  </g>
+  <rect x="68" y="105" width="104" height="44" rx="12" fill="#ffffff" stroke="#c8d7e8"/>
+  <text x="120" y="124" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="700" fill="#2563eb">AirView 用户群</text>
+  <text x="120" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#69778c">替换真实二维码</text>
+</svg>

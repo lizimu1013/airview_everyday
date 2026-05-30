@@ -1,6 +1,13 @@
 const queryParams = new URLSearchParams(window.location.search);
 const routePath = window.location.pathname.replace(/\/+$/, "") || "/";
-const initialView = queryParams.get("view") === "screen" ? "screen" : routePath === "/communication" ? "radar" : "timeline";
+const initialView =
+  queryParams.get("view") === "screen"
+    ? "screen"
+    : routePath === "/communication"
+      ? "radar"
+      : routePath === "/about"
+        ? "about"
+        : "timeline";
 
 const state = {
   view: initialView,
@@ -57,6 +64,7 @@ const els = {
   timelineList: document.querySelector("#timelineList"),
   screenBoard: document.querySelector("#screenBoard"),
   radarBoard: document.querySelector("#radarBoard"),
+  aboutBoard: document.querySelector("#aboutBoard"),
   themeToggle: document.querySelector("#themeToggle"),
   viewLinks: document.querySelectorAll("[data-view-link]"),
   feedLinks: document.querySelectorAll("[data-feed-link]"),
@@ -258,18 +266,25 @@ function formatDateTime(value) {
 function applyView() {
   const isScreen = state.view === "screen";
   const isRadar = state.view === "radar";
+  const isAbout = state.view === "about";
   document.body.classList.toggle("is-screen", isScreen);
   els.page.classList.toggle("screen-mode", isScreen);
   els.page.classList.toggle("radar-mode", isRadar);
   els.hero.hidden = isScreen;
-  els.toolbar.hidden = isScreen || isRadar;
-  els.summaryStrip.hidden = isScreen || isRadar;
-  els.timelineList.hidden = isScreen || isRadar;
+  els.toolbar.hidden = isScreen || isRadar || isAbout;
+  els.summaryStrip.hidden = isScreen || isRadar || isAbout;
+  els.timelineList.hidden = isScreen || isRadar || isAbout;
   els.screenBoard.hidden = !isScreen;
   els.radarBoard.hidden = !isRadar;
-  els.sourceTabs.hidden = isScreen || isRadar || state.feed !== "all";
+  els.aboutBoard.hidden = !isAbout;
+  els.sourceTabs.hidden = isScreen || isRadar || isAbout || state.feed !== "all";
 
-  if (isRadar) {
+  if (isAbout) {
+    els.pageEyebrow.textContent = "团队介绍";
+    els.pageTitle.textContent = "关于我们";
+    els.pageCopy.textContent = "解决方案系统仿真团队在 AI 辅助研发和方案情报整理方向的一次实践。";
+    els.topbarTitle.textContent = "关于我们";
+  } else if (isRadar) {
     els.pageEyebrow.textContent = "论文精读";
     els.pageTitle.textContent = "解决方案AI助手 · 论文精读";
     els.pageCopy.textContent = "聚焦 AI Agent、AI Coding、RAG 与无线通信网络方向，筛选可转化为方案工作的每日精读候选。";
@@ -289,7 +304,7 @@ function applyView() {
   }
 
   els.navLinks.forEach((link) => link.classList.remove("active"));
-  if (isScreen || isRadar) {
+  if (isScreen || isRadar || isAbout) {
     els.viewLinks.forEach((link) => {
       if (link.dataset.viewLink === state.view) link.classList.add("active");
     });
@@ -356,6 +371,11 @@ async function fetchRadar(refresh = false) {
 }
 
 function render() {
+  if (state.view === "about") {
+    applyView();
+    return;
+  }
+
   const items = filterItems(sortByTime(state.items));
   const sources = new Set(items.map((item) => item.source).filter(Boolean));
   const topScore = items.reduce((max, item) => Math.max(max, scoreFor(item)), 0);
@@ -561,21 +581,30 @@ function renderTimeline(items) {
 
 function screenIcon(name) {
   const paths = {
-    spark: '<path d="M12 2v4"></path><path d="M12 18v4"></path><path d="m4.93 4.93 2.83 2.83"></path><path d="m16.24 16.24 2.83 2.83"></path><path d="M2 12h4"></path><path d="M18 12h4"></path><path d="m4.93 19.07 2.83-2.83"></path><path d="m16.24 7.76 2.83-2.83"></path>',
-    source: '<path d="M4 6h16"></path><path d="M4 12h10"></path><path d="M4 18h7"></path><path d="m15 17 2 2 4-5"></path>',
-    score: '<path d="m12 3 2.7 5.47 6.04.88-4.37 4.26 1.03 6.01L12 16.78l-5.4 2.84 1.03-6.01-4.37-4.26 6.04-.88L12 3z"></path>',
-    pulse: '<path d="M3 12h4l2-6 4 12 2-6h6"></path>',
-    clock: '<circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path>',
-    layers: '<path d="m12 3 9 5-9 5-9-5 9-5z"></path><path d="m3 13 9 5 9-5"></path>',
-    bolt: '<path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"></path>',
-    grid: '<rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect>',
-    model: '<path d="M12 3 4 7v10l8 4 8-4V7l-8-4z"></path><path d="M12 12 4 7"></path><path d="M12 12v9"></path><path d="m12 12 8-5"></path>',
-    product: '<path d="M6 3h12l2 5H4l2-5z"></path><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"></path>',
-    industry: '<path d="M3 21h18"></path><path d="M5 21V8l6-3v16"></path><path d="M13 21V7l6 3v11"></path><path d="M8 12h1"></path><path d="M8 16h1"></path><path d="M16 14h1"></path>',
-    paper: '<path d="M7 3h7l5 5v13H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path><path d="M14 3v5h5"></path><path d="M8 13h8"></path><path d="M8 17h6"></path>',
-    tip: '<path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M12 2a7 7 0 0 0-4 12c.7.58 1 1.22 1 2h6c0-.78.3-1.42 1-2a7 7 0 0 0-4-12z"></path>',
+    total: '<path class="screen-glyph-line" d="M6.5 17.5h11M7 12.5h10M8 7.5h8"></path><circle class="screen-glyph-fill" cx="6" cy="7.5" r="1.4"></circle><circle class="screen-glyph-fill" cx="5" cy="12.5" r="1.4"></circle><circle class="screen-glyph-fill" cx="6" cy="17.5" r="1.4"></circle>',
+    coverage: '<path class="screen-glyph-line" d="M12 4.5a7.5 7.5 0 1 0 0 15 7.5 7.5 0 0 0 0-15zM4.8 12h14.4M12 4.5c2 2.1 3 4.6 3 7.5s-1 5.4-3 7.5M12 4.5c-2 2.1-3 4.6-3 7.5s1 5.4 3 7.5"></path>',
+    heat: '<path class="screen-glyph-fill" d="M12.2 20c-3.1 0-5.4-2.2-5.4-5.2 0-2.2 1.2-3.7 2.5-5.2 1.1-1.2 2.2-2.5 2.2-4.6 2.6 1.7 4.7 4.1 4.7 7.2.7-.7 1.1-1.7 1.2-2.8 1.1 1.4 1.8 3 1.8 4.9 0 3.4-2.7 5.7-7 5.7z"></path><path class="screen-glyph-line screen-glyph-light" d="M11.9 17.5c-1.2-.2-2-1.1-2-2.3 0-1 .6-1.8 1.3-2.5.6-.7 1.2-1.4 1.2-2.4 1.4 1 2.5 2.3 2.5 4 0 1.9-1.2 3-3 3.2z"></path>',
+    fresh: '<path class="screen-glyph-line" d="M6 12a6 6 0 0 1 10.3-4.2L18 9.5M18 6.2v3.3h-3.3M18 12a6 6 0 0 1-10.3 4.2L6 14.5M6 17.8v-3.3h3.3"></path><circle class="screen-glyph-dot" cx="12" cy="12" r="1.5"></circle>',
+    spark: '<path class="screen-glyph-fill" d="m12 3 1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z"></path><path class="screen-glyph-line" d="M18 3v3M18 14v4M3 18h4M4 5l2 2"></path>',
+    source: '<path class="screen-glyph-line" d="M6 7h12M6 12h8M6 17h5"></path><path class="screen-glyph-fill" d="m16.4 15.2 1.1 1.2 2.6-3 .9 1-3.5 4-2-2.2z"></path>',
+    score: '<path class="screen-glyph-fill" d="m12 4 2.1 4.3 4.7.7-3.4 3.3.8 4.7-4.2-2.2L7.8 17l.8-4.7L5.2 9l4.7-.7L12 4z"></path>',
+    pulse: '<path class="screen-glyph-line" d="M4 13h3.2l1.7-5 3.3 9 2-6H20"></path><circle class="screen-glyph-dot" cx="18.8" cy="11" r="1.3"></circle>',
+    clock: '<circle class="screen-glyph-line" cx="12" cy="12" r="6.8"></circle><path class="screen-glyph-line" d="M12 8.2v4l2.8 1.7"></path><path class="screen-glyph-fill" d="M12 2.8 14 5h-4z"></path>',
+    layers: '<path class="screen-glyph-fill" d="m12 4 7 3.8-7 3.8-7-3.8z"></path><path class="screen-glyph-line" d="m5 12 7 3.8 7-3.8M5 16l7 3.8 7-3.8"></path>',
+    bolt: '<path class="screen-glyph-fill" d="M13.3 3.5 5.8 13h5.1l-.8 7.5 7.7-10.2h-5.2z"></path>',
+    grid: '<path class="screen-glyph-fill" d="M5 5h5v5H5zM14 5h5v5h-5zM5 14h5v5H5zM14 14h5v5h-5z"></path>',
+    model: '<path class="screen-glyph-fill" d="M12 4 5.5 7.6V16l6.5 3.7 6.5-3.7V7.6z"></path><path class="screen-glyph-line screen-glyph-light" d="M12 11.6 5.5 7.6M12 11.6v8M12 11.6l6.5-4"></path>',
+    product: '<path class="screen-glyph-line" d="M6.2 8.4h11.6l1 3.2H5.2zM6 11.6v6a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-6"></path><path class="screen-glyph-fill" d="M9 5h6l1.1 3.4H7.9z"></path>',
+    industry: '<path class="screen-glyph-fill" d="M5 20V8l5-2.5V20zM12 20V7.5l6 3V20z"></path><path class="screen-glyph-line screen-glyph-light" d="M7.6 12h1M7.6 16h1M14.8 14h1M14.8 17h1"></path>',
+    paper: '<path class="screen-glyph-line" d="M7 4h7l4 4v12H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM14 4v4h4M8 13h8M8 17h6"></path>',
+    tip: '<path class="screen-glyph-fill" d="M12 4a5.8 5.8 0 0 0-3.4 10.5c.7.5.9 1 .9 1.8h5c0-.8.2-1.3.9-1.8A5.8 5.8 0 0 0 12 4z"></path><path class="screen-glyph-line" d="M9.5 19h5M10.5 21h3"></path>',
   };
-  return `<svg class="screen-icon" viewBox="0 0 24 24" aria-hidden="true">${paths[name] || paths.spark}</svg>`;
+  return `
+    <svg class="screen-icon screen-icon-${name}" viewBox="0 0 24 24" aria-hidden="true">
+      <rect class="screen-glyph-bg" x="2.4" y="2.4" width="19.2" height="19.2" rx="6"></rect>
+      ${paths[name] || paths.spark}
+    </svg>
+  `;
 }
 
 function renderTrendChart(items) {
@@ -736,7 +765,7 @@ function renderScreen(items) {
 
   const ranked = sortByScore(items);
   const lead = ranked[0];
-  const latest = items.slice(0, 12);
+  const latest = items.slice(0, 24);
   const categoryKeys = ["ai-models", "ai-products", "industry", "paper", "tip"];
   const counts = items.reduce((acc, item) => {
     const key = item.category || "uncategorized";
@@ -749,17 +778,17 @@ function renderScreen(items) {
     return Number.isFinite(time) && Date.now() - time <= 3 * 60 * 60 * 1000;
   }).length;
   const metricHtml = [
-    ["spark", "总线索", `${items.length}`, "实时聚合"],
-    ["source", "信源覆盖", `${sources.size}`, "跨平台扫描"],
-    ["score", "最高热度", `${scoreFor(lead)}`, "优先级"],
-    ["pulse", "3H 新增", `${recentCount}`, "新鲜信号"],
+    ["total", "总线索", `${items.length}`, "实时聚合"],
+    ["coverage", "信源覆盖", `${sources.size}`, "跨平台扫描"],
+    ["heat", "最高热度", `${scoreFor(lead)}`, "优先级"],
+    ["fresh", "3H 新增", `${recentCount}`, "新鲜信号"],
   ]
     .map(
       ([icon, label, value, hint]) => `
-        <article class="screen-metric">
+        <article class="screen-metric screen-metric-${icon}">
           <span class="screen-icon-box">${screenIcon(icon)}</span>
           <div>
-            <span>${label}</span>
+            <span class="screen-metric-label">${label}</span>
             <strong>${value}</strong>
             <small>${hint}</small>
           </div>
@@ -772,12 +801,14 @@ function renderScreen(items) {
     .map(
       (item, index) => `
         <li>
-          <span class="rank">${screenIcon("clock")}${String(index + 1).padStart(2, "0")}</span>
-          <div>
-            <strong>${escapeHtml(item.title)}</strong>
-            <small>${escapeHtml(formatTime(item.publishedAt))} · ${escapeHtml(categories[item.category] || "其他")} · ${escapeHtml(item.source || "未知信源")}</small>
-          </div>
-          <em>${scoreFor(item)}</em>
+          <a class="screen-list-link" href="${escapeHtml(item.url || "#")}" target="_blank" rel="noreferrer">
+            <span class="rank">${screenIcon("clock")}${String(index + 1).padStart(2, "0")}</span>
+            <div>
+              <strong>${escapeHtml(item.title)}</strong>
+              <small>${escapeHtml(formatTime(item.publishedAt))} · ${escapeHtml(categories[item.category] || "其他")} · ${escapeHtml(item.source || "未知信源")}</small>
+            </div>
+            <em>${scoreFor(item)}</em>
+          </a>
         </li>
       `,
     )
@@ -902,6 +933,8 @@ formatClock();
 setInterval(formatClock, 1000);
 if (state.view === "radar") {
   fetchRadar();
+} else if (state.view === "about") {
+  render();
 } else {
   fetchHot();
   setInterval(fetchHot, state.refreshMs);
