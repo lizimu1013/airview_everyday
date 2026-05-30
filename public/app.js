@@ -845,8 +845,7 @@ function renderRadar(report) {
               <dd class="radar-tags">${chips(directions) || "<span>需确认</span>"}</dd>
             </dl>
             <div class="entry-actions">
-              <a class="origin-link" href="${escapeHtml(link)}" target="_blank" rel="noreferrer">查看论文</a>
-              <button class="arena-send-button" data-arena-paper="${index}" type="button">三方精读</button>
+              <button class="arena-send-button" data-arena-paper="${index}" type="button">送入 AI 圆桌</button>
             </div>
           </article>
         `;
