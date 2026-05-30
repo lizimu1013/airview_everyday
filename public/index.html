@@ -19,18 +19,22 @@
     />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://aihot.muchu.cloud/" />
+    <meta property="og:image" content="https://aihot.muchu.cloud/assets/solution-ai-mate-logo-512.png" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="解决方案AI助手 | Solution AI Mate" />
     <meta
       name="twitter:description"
       content="面向解决方案工作的 AI 助手，辅助方案洞察、信息整理、内容生成、技术分析和工作提效。"
     />
-    <link rel="stylesheet" href="/styles.css?v=20260530-arena-readback2" />
+    <meta name="twitter:image" content="https://aihot.muchu.cloud/assets/solution-ai-mate-logo-512.png" />
+    <link rel="icon" href="/assets/solution-ai-mate-mark-512.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/assets/solution-ai-mate-mark-180.png" />
+    <link rel="stylesheet" href="/styles.css?v=20260530-arena-about" />
   </head>
   <body>
     <aside class="sidebar" aria-label="功能导航">
       <a class="sidebar-brand" href="/" aria-label="解决方案AI助手首页">
-        <span class="brand-mark">AI</span>
+        <img class="brand-mark" src="/assets/solution-ai-mate-mark-512.png" alt="" width="36" height="36" />
         <span>
           <strong>解决方案AI助手</strong>
           <small>Solution AI Mate</small>
@@ -68,11 +72,11 @@
             <span class="nav-icon" aria-hidden="true">◷</span>
             <span>AI 日报</span>
           </a>
-          <a href="https://aihot.virxact.com/agent" target="_blank" rel="noreferrer">
+          <a href="https://wiki.huawei.com/domains/171127/wiki/8/WIKI2026032710576951" target="_blank" rel="noreferrer">
             <span class="nav-icon" aria-hidden="true">↗</span>
-            <span>Agent 接入</span>
+            <span>CodeAgent</span>
           </a>
-          <a href="https://github.com/lizimu1013/airview_everyday#readme" target="_blank" rel="noreferrer">
+          <a href="/about" data-view-link="about">
             <span class="nav-icon" aria-hidden="true">i</span>
             <span>关于</span>
           </a>
@@ -184,9 +188,67 @@
         <section class="arena-board" id="arenaBoard" aria-label="解决方案AI助手 AI 圆桌" hidden>
           <div class="empty">正在加载 AI 圆桌。</div>
         </section>
+
+        <section class="about-board" id="aboutBoard" aria-label="关于我们" hidden>
+          <div class="about-layout">
+            <section class="about-copy">
+              <h2>关于我们</h2>
+              <p>我们是解决方案系统仿真团队，负责 PDU 内系统仿真平台能力建设和 AI 辅助研发工作。</p>
+              <p>团队长期面向无线网络解决方案设计、系统级性能评估、算法建模与仿真验证等场景，建设和维护系统仿真平台能力，支撑多制式、多场景、多业务的方案分析与技术决策。</p>
+              <p>同时，我们持续探索 AI 在研发流程中的实际应用，包括代码理解、仿真建模、问题定位、结果分析、知识沉淀和方案洞察，推动 AI 从工具体验走向真实研发提效。</p>
+              <p>这个网站是团队在 AI 辅助研发和方案情报整理方向的一次实践，目标是帮助团队更高效地获取 AI 动态、沉淀技术素材、支撑方案交流，并逐步形成可复用的 AI 工作流能力。</p>
+              <p class="about-slogan">AirView is all you need！</p>
+            </section>
+
+            <aside class="about-qr-panel" aria-label="交流群二维码">
+              <div class="about-qr-head">
+                <span>加入交流</span>
+                <strong>扫码进入团队协作群</strong>
+              </div>
+              <div class="about-qr-grid">
+                <article>
+                  <div>
+                    <h3>AirView 用户群</h3>
+                    <p>系统仿真平台使用交流</p>
+                  </div>
+                  <img src="/assets/airview-user-group-qr.svg" alt="AirView 用户群二维码" />
+                </article>
+                <article>
+                  <div>
+                    <h3>CodeAgent 交流群</h3>
+                    <p>AI 编码与研发提效实践</p>
+                  </div>
+                  <img src="/assets/codeagent-group-qr.svg" alt="CodeAgent 交流群二维码" />
+                </article>
+              </div>
+            </aside>
+          </div>
+
+          <section class="team-panel" aria-label="团队成员信息">
+            <h2>团队成员信息</h2>
+            <dl class="team-list">
+              <div>
+                <dt>专家</dt>
+                <dd>鞠亮</dd>
+              </div>
+              <div>
+                <dt>PL</dt>
+                <dd>向福星</dd>
+              </div>
+              <div>
+                <dt>核心骨干</dt>
+                <dd>李子沐、雎洲、侯贤伟、吴洗非</dd>
+              </div>
+              <div>
+                <dt>PDU AI 先锋</dt>
+                <dd>陈秋卓（FDD设计） 郝国宇（SRAN设计） 李宇（松山湖分部） @李钊（5G-A设计） 王鹏飞（解决方案二部） 唐钧（NGR设计）</dd>
+              </div>
+            </dl>
+          </section>
+        </section>
       </div>
     </main>
 
-    <script src="/app.js?v=20260530-arena-readback2" type="module"></script>
+    <script src="/app.js?v=20260530-arena-about" type="module"></script>
   </body>
 </html>
