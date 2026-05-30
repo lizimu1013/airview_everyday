@@ -811,7 +811,6 @@ function renderRadar(report) {
   const topReads = asArray(report.topReads);
   const saveOnly = asArray(report.saveOnly);
   const filteredReasons = asArray(report.filteredReasons);
-  const sourceNotes = asArray(report.sourceNotes);
 
   const chips = (values) => asArray(values).map((value) => `<span>${escapeHtml(value)}</span>`).join("");
   const listItems = (values) =>
@@ -892,10 +891,6 @@ function renderRadar(report) {
         <h2>过滤原因</h2>
         <ol>${listItems(filteredReasons)}</ol>
       </div>
-    </section>
-
-    <section class="radar-sources">
-      ${sourceNotes.map((note) => `<span>${escapeHtml(note)}</span>`).join("")}
     </section>
 
     <section class="radar-list">
