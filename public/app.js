@@ -308,7 +308,6 @@ function applyView() {
   const isArena = state.view === "arena";
   const isAbout = state.view === "about";
   document.body.classList.toggle("is-screen", isScreen);
-  document.body.classList.toggle("arena-fullscreen", isArena);
   els.page.classList.toggle("screen-mode", isScreen);
   els.page.classList.toggle("radar-mode", isRadar);
   els.page.classList.toggle("arena-mode", isArena);
