@@ -25,7 +25,7 @@
       name="twitter:description"
       content="面向解决方案工作的 AI 助手，辅助方案洞察、信息整理、内容生成、技术分析和工作提效。"
     />
-    <link rel="stylesheet" href="/styles.css?v=20260529-screen-charts" />
+    <link rel="stylesheet" href="/styles.css?v=20260530-arena-readback2" />
   </head>
   <body>
     <aside class="sidebar" aria-label="功能导航">
@@ -51,6 +51,10 @@
           <a href="/communication" data-view-link="radar">
             <span class="nav-icon" aria-hidden="true">◎</span>
             <span>论文精读</span>
+          </a>
+          <a href="/arena" data-view-link="arena">
+            <span class="nav-icon" aria-hidden="true">✧</span>
+            <span>AI 圆桌</span>
           </a>
           <a href="/?view=screen" data-view-link="screen">
             <span class="nav-icon" aria-hidden="true">▣</span>
@@ -176,9 +180,13 @@
         <section class="radar-board" id="radarBoard" aria-label="解决方案AI助手论文精读" hidden>
           <div class="empty">正在加载今日论文精读候选。</div>
         </section>
+
+        <section class="arena-board" id="arenaBoard" aria-label="解决方案AI助手 AI 圆桌" hidden>
+          <div class="empty">正在加载 AI 圆桌。</div>
+        </section>
       </div>
     </main>
 
-    <script src="/app.js?v=20260529-screen-charts" type="module"></script>
+    <script src="/app.js?v=20260530-arena-readback2" type="module"></script>
   </body>
 </html>

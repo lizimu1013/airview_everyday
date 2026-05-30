@@ -1,0 +1,53 @@
+{
+  "manifest_version": 3,
+  "name": "Solution AI Mate Arena Companion",
+  "version": "0.2.4",
+  "description": "把解决方案AI助手的 AI 圆桌任务发送到已登录的 9 大 AI 网页，并回收生成结果。",
+  "permissions": ["tabs", "scripting", "storage"],
+  "host_permissions": [
+    "http://127.0.0.1:*/*",
+    "http://localhost:*/*",
+    "https://claude.ai/*",
+    "https://gemini.google.com/*",
+    "https://chatgpt.com/*",
+    "https://chat.deepseek.com/*",
+    "https://www.doubao.com/*",
+    "https://tongyi.aliyun.com/*",
+    "https://www.qianwen.com/*",
+    "https://kimi.moonshot.cn/*",
+    "https://www.kimi.com/*",
+    "https://yuanbao.tencent.com/*",
+    "https://grok.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://127.0.0.1:*/*", "http://localhost:*/*"],
+      "js": ["site-bridge.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "https://claude.ai/*",
+        "https://gemini.google.com/*",
+        "https://chatgpt.com/*",
+        "https://chat.deepseek.com/*",
+        "https://www.doubao.com/*",
+        "https://tongyi.aliyun.com/*",
+        "https://www.qianwen.com/*",
+        "https://kimi.moonshot.cn/*",
+        "https://www.kimi.com/*",
+        "https://yuanbao.tencent.com/*",
+        "https://grok.com/*"
+      ],
+      "js": ["ai-page.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "Solution AI Mate Arena Companion"
+  }
+}

@@ -25,6 +25,7 @@ PORT=8080 npm start
 - 自动读取解决方案相关实时条目
 - 信息库页面：`/all`，使用全量信息流并支持信源类型筛选
 - 论文精读页面：`/communication`，扫描可访问论文源并生成不超过 10 篇精读候选
+- AI Arena 页面：`/arena`，通过 Chrome 浏览器伴侣扩展把多 AI Prompt 发送到已登录的 Claude / Gemini / GPT / DeepSeek / 豆包 / 千问 / Kimi / 元宝 / Grok 网页
 - 5 分钟自动刷新，支持手动刷新
 - 按模型、产品、行业、论文、技巧分类筛选
 - 支持服务端关键词搜索
@@ -54,3 +55,16 @@ PAPER_RADAR_API_KEY=...
 ```text
 GOOGLE_SCHOLAR_ALERT_FEEDS=https://...
 ```
+
+## AI 圆桌浏览器伴侣扩展
+
+AI Arena 只保留浏览器伴侣方式：复用你已经登录的 Claude、Gemini、GPT、DeepSeek、豆包、千问、Kimi、元宝、Grok 网页账号，不在网站里配置模型调用。
+
+1. 打开 `chrome://extensions`
+2. 开启“开发者模式”
+3. 点击“加载已解压的扩展程序”
+4. 选择 `companion-extension`
+5. 如果此前已经加载过扩展，修改代码后需要在扩展卡片上点“重新加载”
+6. 回到 `/arena`，点击发送后会立即提交到浏览器伴侣，自动提交到已登录 AI 网页，并在生成完成后回收回答展示到页面中
+
+当前版本不提供“只填入不提交”的可选项。发送按钮会直接调用浏览器伴侣，扩展已覆盖 Claude、Gemini、GPT、DeepSeek、豆包、千问、Kimi、元宝、Grok。网页生成结果会在稳定后自动写回 AI 圆桌卡片；若某个网页结构变化导致无法读取，右侧状态会保留该模型的提交状态。

@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { createReadStream, existsSync } from "node:fs";
 import { extname, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { handleArenaRequest } from "./src/arena/arena-service.js";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const publicDir = resolve(__dirname, "public");
@@ -22,7 +23,7 @@ const imageCache = new Map();
 const imageInflight = new Map();
 const radarCacheTtlMs = 12 * 60 * 60 * 1000;
 const radarCache = new Map();
-const appRoutes = new Set(["/all", "/all/", "/screen", "/screen/", "/communication", "/communication/"]);
+const appRoutes = new Set(["/all", "/all/", "/screen", "/screen/", "/communication", "/communication/", "/arena", "/arena/"]);
 const paperRadarBaseUrl = (process.env.PAPER_RADAR_BASE_URL || "https://api.muchu.cloud/v1").replace(/\/+$/, "");
 const paperRadarModel = process.env.PAPER_RADAR_MODEL || "gpt-5.4-mini";
 const paperRadarApiKey = process.env.PAPER_RADAR_API_KEY || process.env.OPENAI_API_KEY || "";
@@ -929,6 +930,11 @@ const server = http.createServer(async (req, res) => {
 
   if (req.url.startsWith("/api/paper-radar")) {
     await proxyPaperRadar(req, res);
+    return;
+  }
+
+  if (req.url.startsWith("/api/arena")) {
+    await handleArenaRequest(req, res);
     return;
   }
 
